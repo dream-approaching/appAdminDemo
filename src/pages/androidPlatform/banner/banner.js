@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'dva';
 import { Modal } from 'antd';
+import BraftEditor from 'braft-editor';
+import 'braft-editor/dist/index.css';
 import Banner from '@/components/PageComponent/Banner';
 
 const testData = [
@@ -46,10 +48,22 @@ const testData = [
 class BannerAndroid extends React.Component {
   state = {
     // selectItem: {},
+    editorState: BraftEditor.createEditorState(null),
   };
 
   submitSearch = data => {
     console.log(data);
+  };
+
+  submitContent = async () => {
+    // 在编辑器获得焦点时按下ctrl+s会执行此方法
+    // 编辑器内容提交到服务端之前，可直接调用editorState.toHTML()来获取HTML格式的内容
+    const htmlContent = this.state.editorState.toHTML();
+    console.log('%chtmlContent:', 'color: #0e93e0;background: #aaefe5;', htmlContent);
+  };
+
+  handleEditorChange = editorState => {
+    this.setState({ editorState });
   };
 
   deleteAction = item => {
@@ -72,14 +86,22 @@ class BannerAndroid extends React.Component {
   };
 
   render() {
+    const { editorState } = this.state;
     return (
-      <Banner
-        ref={ref => (this.pageComponent = ref)}
-        submitSearch={this.submitSearch}
-        deleteAction={this.deleteAction}
-        showModal={this.showModal}
-        dataSource={testData}
-      />
+      <Fragment>
+        <Banner
+          ref={ref => (this.pageComponent = ref)}
+          submitSearch={this.submitSearch}
+          deleteAction={this.deleteAction}
+          showModal={this.showModal}
+          dataSource={testData}
+        />
+        <BraftEditor
+          value={editorState}
+          onChange={this.handleEditorChange}
+          onSave={this.submitContent}
+        />
+      </Fragment>
     );
   }
 }
