@@ -1,0 +1,50 @@
+.exportModal {
+  width: 600px !important;
+  .colorShowBlock {
+    width: 40px;
+    height: 30px;
+    color: transparent;
+    cursor: pointer;
+  }
+  .colorPickerBody {
+    position: absolute;
+    right: 0;
+    z-index: 1000;
+  }
+}
+
+:global {
+  .exportModal {
+    .ant-form-item {
+      margin-bottom: 22px;
+    }
+    .ant-form-item-with-help {
+      margin-bottom: 4px;
+    }
+    .ant-form-explain {
+      height: 19px;
+      margin-top: -3px;
+      font-size: 13px;
+    }
+    .radioCheck {
+      .radioCheckCol {
+        height: 27px;
+      }
+    }
+    .colorPicker {
+      .ant-input-group-addon {
+        padding: 0;
+      }
+    }
+    .upload {
+      .ant-form-extra {
+        position: absolute;
+        top: 30px;
+        left: -103px;
+        width: 100px;
+        color: #ff7000;
+        font-size: 12px;
+      }
+    }
+  }
+}
