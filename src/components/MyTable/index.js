@@ -13,8 +13,10 @@ function MyTable({ pagination, style, ...restProps }) {
         emptyText: '暂无数据',
       }}
       pagination={{
+        hideOnSinglePage: false,
+        pageSize: 15,
+        pageSizeOptions: ['15', '50', '100'],
         ...pagination,
-        hideOnSinglePage: true,
       }}
       scroll={{ x: 1 || true, y: 0 }}
       rowClassName={styles.myTableRow}

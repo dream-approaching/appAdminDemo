@@ -19,7 +19,6 @@ export default {
   effects: {
     *login({ payload }, { call, put }) {
       const response = yield call(loginReq, payload);
-      console.log('%cresponse:', 'color: #0e93e0;background: #aaefe5;', response);
       yield put({
         type: 'changeLoginStatus',
         payload: {

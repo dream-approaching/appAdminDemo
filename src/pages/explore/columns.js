@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import { articleType } from '@/constants/constants';
 
 // 探索列表
 export default function exploreColumn(editAction) {
@@ -7,38 +8,34 @@ export default function exploreColumn(editAction) {
       title: '文章ID',
       dataIndex: 'id',
       key: 'id',
-      sorter: (a, b) => {
-        console.log(a, b);
-        return a.id - b.id;
-      },
     },
     {
       title: '标题',
-      dataIndex: 'mingcheng',
-      key: 'mingcheng',
-      sorter: (a, b) => {
-        if (a.mingcheng < b.mingcheng) {
-          return 1;
-        }
-        return -1;
-      },
+      dataIndex: 'title',
+      key: 'title',
+      // sorter: (a, b) => {
+      //   if (a.mingcheng < b.mingcheng) {
+      //     return 1;
+      //   }
+      //   return -1;
+      // },
     },
     {
       title: '排序',
-      dataIndex: 'tupian',
-      key: 'tupian',
+      dataIndex: 'sort',
+      key: 'sort',
       render: value => value || '-',
     },
     {
       title: '文章类型',
-      dataIndex: 'zhuangtai',
-      key: 'zhuangtai',
-      render: value => value || '0',
+      dataIndex: 'type',
+      key: 'type',
+      render: value => articleType[value] || '-',
     },
     {
       title: '标签',
-      dataIndex: 'jiekou',
-      key: 'jiekou',
+      dataIndex: 'label',
+      key: 'label',
       render: value => value || '-',
     },
     {
@@ -46,47 +43,59 @@ export default function exploreColumn(editAction) {
       dataIndex: 'qudao',
       key: 'qudao',
       render: value => value || '-',
+      sorter: (a, b) => {
+        return a.qudao - b.qudao;
+      },
     },
     {
       title: '收藏量',
-      dataIndex: 'qudao2',
-      key: 'qudao2',
+      dataIndex: 'favorites',
+      key: 'favorites',
       render: value => value || '-',
+      sorter: (a, b) => {
+        return a.favorites - b.favorites;
+      },
     },
     {
       title: '评论量',
-      dataIndex: 'qudao3',
-      key: 'qudao3',
+      dataIndex: 'comment_num',
+      key: 'comment_num',
       render: value => value || '-',
+      sorter: (a, b) => {
+        return a.comment_num - b.comment_num;
+      },
     },
     {
       title: '转发量',
       dataIndex: 'qudao4',
       key: 'qudao4',
       render: value => value || '-',
+      sorter: (a, b) => {
+        return a.qudao4 - b.qudao4;
+      },
     },
     {
       title: '发布时间',
-      dataIndex: 'kaishi',
-      key: 'kaishi',
+      dataIndex: 'created_time',
+      key: 'created_time',
       render: value => value || '-',
     },
     {
       title: '更新时间',
-      dataIndex: 'jieshu',
-      key: 'jieshu',
+      dataIndex: 'update_time',
+      key: 'update_time',
       render: value => value || '-',
     },
     {
       title: '发布人员',
-      dataIndex: 'url',
-      key: 'url',
+      dataIndex: 'create_user',
+      key: 'create_user',
       render: value => value || '-',
     },
     {
       title: '更新人员',
-      dataIndex: 'url2',
-      key: 'url2',
+      dataIndex: 'update_user',
+      key: 'update_user',
       render: value => value || '-',
     },
     {

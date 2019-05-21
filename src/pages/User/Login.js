@@ -70,7 +70,7 @@ class LoginPage extends Component {
           }}
         >
           <UserName
-            name="user_name"
+            name="username"
             placeholder="请输入用户名"
             rules={[
               {
@@ -80,7 +80,7 @@ class LoginPage extends Component {
             ]}
           />
           <Password
-            name="pass_word"
+            name="password"
             placeholder="请输入密码"
             rules={[
               {
