@@ -2,7 +2,6 @@ import fetch from 'dva/fetch';
 import { notification } from 'antd';
 import router from 'umi/router';
 import hash from 'hash.js';
-import { isAntdPro } from './utils';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -65,7 +64,7 @@ const cachedSave = (response, hashcode) => {
  */
 export default function request(url, option) {
   const options = {
-    expirys: isAntdPro(),
+    expirys: true,
     ...option,
   };
   /**
@@ -79,7 +78,8 @@ export default function request(url, option) {
     .digest('hex');
 
   const defaultOptions = {
-    credentials: 'include',
+    // credentials: 'include',
+    method: 'GET',
   };
   const newOptions = { ...defaultOptions, ...options };
   if (
@@ -103,22 +103,41 @@ export default function request(url, option) {
     }
   }
 
-  const expirys = options.expirys && 60;
+  const expirys = 60;
   // options.expirys !== false, return the cache,
-  if (options.expirys !== false) {
-    const cached = sessionStorage.getItem(hashcode);
-    const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
-    if (cached !== null && whenCached !== null) {
-      const age = (Date.now() - whenCached) / 1000;
-      if (age < expirys) {
-        const response = new Response(new Blob([cached]));
-        return response.json();
-      }
-      sessionStorage.removeItem(hashcode);
-      sessionStorage.removeItem(`${hashcode}:timestamp`);
+  const cached = sessionStorage.getItem(hashcode);
+  const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
+  if (cached !== null && whenCached !== null) {
+    const age = (Date.now() - whenCached) / 1000;
+    if (age < expirys) {
+      const response = new Response(new Blob([cached]));
+      return response.json();
     }
+    sessionStorage.removeItem(hashcode);
+    sessionStorage.removeItem(`${hashcode}:timestamp`);
   }
-  return fetch(url, newOptions)
+
+  let fetchUrl;
+  if (newOptions.method === 'GET' || newOptions.method === 'POST') {
+    const store = window.g_app._store; // eslint-disable-line
+    const state = store.getState();
+    const { loginInfo } = state.login;
+    console.log(loginInfo);
+    const globalParams = {
+      access_token: loginInfo ? loginInfo.access_token : '',
+      username: loginInfo ? loginInfo.username : '',
+      channel_id: '1',
+    };
+    const data = { ...globalParams, ...newOptions.data };
+
+    const query = data ? `?params=${JSON.stringify(data)}` : '';
+    fetchUrl = `${url}${query}`;
+    // newOptions = null;
+  } else {
+    fetchUrl = url;
+  }
+
+  return fetch(fetchUrl, newOptions)
     .then(checkStatus)
     .then(response => cachedSave(response, hashcode))
     .then(response => {

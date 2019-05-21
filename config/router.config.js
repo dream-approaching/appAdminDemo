@@ -26,6 +26,12 @@ export default [
       // dashboard
       { path: '/', redirect: '/iosPlatform/banner', authority: ['admin', 'user'] },
       {
+        path: '/explore/explore',
+        name: '探索',
+        authority: ['admin', 'user'],
+        component: './explore/explore',
+      },
+      {
         path: '/androidPlatform',
         name: 'Android客户端',
         icon: 'android',

@@ -1,29 +1,40 @@
 import { routerRedux } from 'dva/router';
 import { stringify } from 'qs';
-import { getFakeCaptcha } from '@/services/api';
+import { getCaptchaReq, loginReq } from '@/services/loginApi';
 import { setAuthority } from '@/utils/authority';
-import { getPageQuery } from '@/utils/utils';
+import { getPageQuery, compile, uncompile } from '@/utils/utils';
 import { reloadAuthorized } from '@/utils/Authorized';
+import message from '@/components/Message';
 
 export default {
   namespace: 'login',
 
   state: {
     status: undefined,
+    loginInfo: sessionStorage.getItem('info')
+      ? JSON.parse(uncompile(sessionStorage.getItem('info')))
+      : null,
   },
 
   effects: {
     *login({ payload }, { call, put }) {
-      // const response = yield call(fakeAccountLogin, payload);
-      const response = { status: 'ok', currentAuthority: 'admin' };
-      console.log(payload, call);
+      const response = yield call(loginReq, payload);
+      console.log('%cresponse:', 'color: #0e93e0;background: #aaefe5;', response);
       yield put({
         type: 'changeLoginStatus',
-        payload: response,
+        payload: {
+          status: true,
+          currentAuthority: 'admin',
+        },
       });
       // Login successfully
-      if (response.status === 'ok') {
+      if (response && response.code === 0) {
         reloadAuthorized();
+        yield put({
+          type: 'saveLoginInfo',
+          payload: response.data,
+        });
+        window.sessionStorage.setItem('info', compile(JSON.stringify(response.data)));
         const urlParams = new URL(window.location.href);
         const params = getPageQuery();
         let { redirect } = params;
@@ -39,11 +50,18 @@ export default {
           }
         }
         yield put(routerRedux.replace(redirect || '/'));
+      } else {
+        message.warning(response.msg || '登录失败');
       }
     },
 
-    *getCaptcha({ payload }, { call }) {
-      yield call(getFakeCaptcha, payload);
+    *getCaptchaEffect({ payload }, { call }) {
+      const response = yield call(getCaptchaReq, payload);
+      if (response.success) {
+        message.success('发送成功');
+      } else {
+        message.warning(response.msg || '发送失败');
+      }
     },
 
     *logout(_, { put }) {
@@ -53,6 +71,11 @@ export default {
           status: false,
           currentAuthority: 'guest',
         },
+      });
+      window.sessionStorage.clear();
+      yield put({
+        type: 'saveLoginInfo',
+        payload: null,
       });
       reloadAuthorized();
       // redirect
@@ -76,6 +99,12 @@ export default {
         ...state,
         status: payload.status,
         type: payload.type,
+      };
+    },
+    saveLoginInfo(state, { payload }) {
+      return {
+        ...state,
+        loginInfo: payload,
       };
     },
   },
