@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import Table from '@/components/MyTable';
-import { Input, Upload, Icon } from 'antd';
+import { Input, Upload, Icon, Modal } from 'antd';
 import { connect } from 'dva';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { exploreType, publishStatus } from '@/constants/constants';
@@ -9,36 +9,6 @@ import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
 import columns from './columns';
 import styles from './index.less';
-
-// function readImage(file) {
-//   const reader = new FileReader();
-
-//   reader.addEventListener('load', function() {
-//     const image = new Image();
-
-//     image.addEventListener('load', function() {
-//       var imageInfo =
-//         file.name +
-//         ' ' +
-//         image.width +
-//         '×' +
-//         image.height +
-//         ' ' +
-//         file.type +
-//         ' ' +
-//         Math.round(file.size / 1024) +
-//         'KB';
-
-//       // Show image and info
-//       elPreview.appendChild(this);
-//       elPreview.insertAdjacentHTML('beforeend', imageInfo + '<br>');
-
-//     });
-//     image.src = reader.result;
-//   });
-
-//   reader.readAsDataURL(file);
-// }
 
 @connect(({ explore, loading }) => ({
   explore,
@@ -50,11 +20,13 @@ class Explore extends React.Component {
     editStatus: true,
     fileList: [],
     editorState: BraftEditor.createEditorState(null),
+    imgSize: '10',
+    imgType: 'png',
+    imgContent: '',
   };
 
   componentDidMount() {
     this.queryExploreListDispatch();
-    this.input = document.getElementById('browse');
   }
 
   queryExploreListDispatch = params => {
@@ -114,14 +86,64 @@ class Explore extends React.Component {
     this.setState({ fileList });
   };
 
-  beforeUpload = file => {
+  handleBeforeUpload = async file => {
     console.log('%cfile:', 'color: #0e93e0;background: #aaefe5;', file);
+    // 限制图片 格式、size、分辨率
+    const isJPG = file.type === 'image/jpeg';
+    // const isJPEG  = file.type === 'image/jpeg';
+    const isGIF = file.type === 'image/gif';
+    const isPNG = file.type === 'image/png';
+    if (!(isJPG || isGIF || isPNG)) {
+      Modal.error({
+        title: '只能上传JPG 、JPEG 、GIF、 PNG格式的图片~',
+      });
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      Modal.error({
+        title: '超过2M限制 不允许上传~',
+      });
+    }
+    await this.setState({
+      imgSize: file.size,
+      imgType: file.type,
+      imgContent: encodeURI(file.thumbUrl),
+    });
+    return (isJPG || isGIF || isPNG) && isLt2M && this.checkImageWH(file, 350, 504);
+  };
 
-    return true;
+  checkImageWH = (file, width, height) => {
+    return new Promise((resolve, reject) => {
+      const filereader = new FileReader();
+      filereader.onload = e => {
+        const src = e.target.result;
+        const image = new Image();
+        image.onload = () => {
+          resolve();
+          if (width && this.width !== width) {
+            Modal.error({
+              title: `请上传宽为${width}的图片`,
+            });
+            reject();
+          } else if (height && this.height !== height) {
+            Modal.error({
+              title: `请上传高为${height}的图片`,
+            });
+            reject();
+          } else {
+            resolve();
+          }
+        };
+        image.onerror = reject;
+        image.src = src;
+      };
+      filereader.readAsDataURL(file);
+    });
   };
 
   renderEditStatus = () => {
-    const { editorState, fileList } = this.state;
+    const { editorState, fileList, imgContent, imgSize, imgType } = this.state;
+    console.log('%c this.state:', 'color: #0e93e0;background: #aaefe5;', this.state);
     const blockExportFn = (contentState, block) => {
       const previousBlock = contentState.getBlockBefore(block.key);
 
@@ -159,12 +181,20 @@ class Explore extends React.Component {
             />
             <div className={styles.footerCon}>
               <Upload
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                action="http://192.168.0.200:1230/interface/v1/js/user/auth/upload_picture"
+                data={{
+                  sig: '',
+                  access_token: '',
+                  channel_id: '',
+                  username: '',
+                  image_size: imgSize,
+                  image_type: imgType,
+                  image_content: imgContent,
+                }}
                 listType="picture-card"
                 fileList={fileList}
-                id="browse"
                 onChange={this.handleChangeUpload}
-                beforeUpload={this.beforeUpload}
+                beforeUpload={this.handleBeforeUpload}
               >
                 {fileList.length >= 3 ? null : uploadButton}
               </Upload>
