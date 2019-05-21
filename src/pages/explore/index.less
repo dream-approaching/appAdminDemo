@@ -1,0 +1,48 @@
+.footerCon {
+  height: 48px;
+  margin-top: -48px;
+}
+
+.editorCon {
+  margin: -24px -24px 0;
+  .editorHeader {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 65px;
+    padding: 0 20px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    .headerInput {
+      flex: 2;
+      color: #333;
+      font-size: 24px;
+      border: none;
+    }
+    .rightBtnCon {
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+  .editBody {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    .editBodyLeft {
+      flex: 2;
+      background: #fff;
+      border-right: 1px solid #ddd;
+      .footerCon {
+        border-top: 1px solid #ddd;
+      }
+    }
+    .editBodyRight {
+      flex: 1;
+    }
+  }
+}
