@@ -9,7 +9,7 @@ module.exports = {
   menu: {
     disableLocal: true,
   },
-  title: '猎鹰浏览器',
+  title: '树莓后台管理系统',
   pwa: true,
   // Your custom iconfont Symbol script Url
   // eg：//at.alicdn.com/t/font_1039637_btcrd5co4w.js
