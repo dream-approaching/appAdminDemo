@@ -41,6 +41,7 @@ module.exports = {
     'react/no-array-index-key': 0,
     'no-plusplus': 0,
     'no-param-reassign': 0,
+    'no-useless-escape': 0,
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url', 'object-assign'],

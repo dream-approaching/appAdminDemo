@@ -6,4 +6,4 @@ message.config({
   maxCount: 1,
 });
 
-export default message;
+export const myMessage = message;

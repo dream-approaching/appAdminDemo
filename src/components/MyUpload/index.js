@@ -2,6 +2,7 @@ import React from 'react';
 import { Upload, Modal } from 'antd';
 import { connect } from 'dva';
 import { baseUrl } from '@/defaultSettings';
+import { myMessage } from '../MyMessage';
 
 @connect(({ login }) => ({ login }))
 class MyUpload extends React.Component {
@@ -21,28 +22,26 @@ class MyUpload extends React.Component {
     const isPNG = file.type === 'image/png';
     const isAllowType = isJPG || isJPEG || isPNG;
     if (!isAllowType) {
-      Modal.error({
-        title: '只能上传JPG 、JPEG 、 PNG格式的图片~',
-      });
+      myMessage.warning('只能上传JPG 、JPEG 、 PNG格式的图片~');
+      return false;
     }
     const isAllowSize = file.size / 1024 / 1024 < 2;
     if (!isAllowSize) {
-      Modal.error({
-        title: '超过2M限制 不允许上传~',
-      });
+      myMessage.warning('超过2M限制 不允许上传~');
+      return false;
     }
     await this.setState({
       imgSize: file.size,
-      imgType: file.type,
+      imgType: file.type.split('/')[1],
       imgContent: encodeURI(file.thumbUrl),
     });
-    return isAllowType && isAllowSize && this.checkImageWH(file, width, height);
+    return this.checkImageWH(file, width, height);
   };
 
   checkImageWH = (file, width, height) => {
     return new Promise((resolve, reject) => {
       const filereader = new FileReader();
-      filereader.onload = e => {
+      filereader.onload = async e => {
         const src = e.target.result;
         const image = new Image();
         image.onload = () => {
@@ -62,6 +61,9 @@ class MyUpload extends React.Component {
         };
         image.onerror = reject;
         image.src = src;
+        await this.setState({
+          imgContent: encodeURI(image.src),
+        });
       };
       filereader.readAsDataURL(file);
     });
@@ -71,6 +73,7 @@ class MyUpload extends React.Component {
     const { login, ...rest } = this.props;
     const { loginInfo } = login;
     const { imgContent, imgSize, imgType } = this.state;
+    console.log('%cimgContent:', 'color: #0e93e0;background: #aaefe5;', imgContent);
     return (
       <Upload
         action={`${baseUrl}/interface/v1/js/user/auth/upload_picture`}

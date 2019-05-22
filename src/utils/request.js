@@ -82,29 +82,8 @@ export default function request(url, option) {
     method: 'GET',
   };
   const newOptions = { ...defaultOptions, ...options };
-  if (
-    newOptions.method === 'POST' ||
-    newOptions.method === 'PUT' ||
-    newOptions.method === 'DELETE'
-  ) {
-    if (!(newOptions.body instanceof FormData)) {
-      newOptions.headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json; charset=utf-8',
-        ...newOptions.headers,
-      };
-      newOptions.body = JSON.stringify(newOptions.body);
-    } else {
-      // newOptions.body is FormData
-      newOptions.headers = {
-        Accept: 'application/json',
-        ...newOptions.headers,
-      };
-    }
-  }
 
   const expirys = 60;
-  // options.expirys !== false, return the cache,
   const cached = sessionStorage.getItem(hashcode);
   const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
   if (cached !== null && whenCached !== null) {
@@ -118,22 +97,24 @@ export default function request(url, option) {
   }
 
   let fetchUrl;
-  if (newOptions.method === 'GET' || newOptions.method === 'POST') {
-    const store = window.g_app._store; // eslint-disable-line
-    const state = store.getState();
-    const { loginInfo } = state.login;
-    console.log(loginInfo);
-    const globalParams = {
-      access_token: loginInfo ? loginInfo.access_token : '',
-      username: loginInfo ? loginInfo.username : '',
-      channel_id: '1',
-    };
+  const store = window.g_app._store; // eslint-disable-line
+  const state = store.getState();
+  const { loginInfo } = state.login;
+  const globalParams = {
+    access_token: loginInfo ? loginInfo.access_token : '',
+    username: loginInfo ? loginInfo.username : '',
+    channel_id: '1',
+  };
+  if (newOptions.method === 'GET') {
     const data = { ...globalParams, ...newOptions.data };
-
     const query = data ? `?params=${JSON.stringify(data)}` : '';
     fetchUrl = `${url}${query}`;
-    // newOptions = null;
-  } else {
+  }
+  if (newOptions.method === 'POST') {
+    const data = { ...globalParams, ...newOptions.body };
+    const searchParams = new FormData();
+    searchParams.append('params', JSON.stringify(data));
+    newOptions.body = searchParams;
     fetchUrl = url;
   }
 

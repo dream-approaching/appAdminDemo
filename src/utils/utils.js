@@ -232,3 +232,34 @@ export function uncompile(code) {
   }
   return c;
 }
+
+export function debounce2(func, wait = 300, immediate = true) {
+  let timer;
+  let context;
+  let args;
+
+  const later = () =>
+    setTimeout(() => {
+      timer = null;
+      if (!immediate) {
+        func.apply(context, args);
+        args = null;
+        context = null;
+      }
+    }, wait);
+
+  return (...params) => {
+    if (!timer) {
+      timer = later();
+      if (immediate) {
+        func.apply(this, params);
+      } else {
+        context = this;
+        args = params;
+      }
+    } else {
+      clearTimeout(timer);
+      timer = later();
+    }
+  };
+}

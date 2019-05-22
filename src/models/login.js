@@ -4,7 +4,7 @@ import { getCaptchaReq, loginReq } from '@/services/loginApi';
 import { setAuthority } from '@/utils/authority';
 import { getPageQuery, compile, uncompile } from '@/utils/utils';
 import { reloadAuthorized } from '@/utils/Authorized';
-import message from '@/components/Message';
+import { myMessage } from '@/components/MyMessage';
 
 export default {
   namespace: 'login',
@@ -50,16 +50,16 @@ export default {
         }
         yield put(routerRedux.replace(redirect || '/'));
       } else {
-        message.warning(response.msg || '登录失败');
+        myMessage.warning(response.msg || '登录失败');
       }
     },
 
     *getCaptchaEffect({ payload }, { call }) {
       const response = yield call(getCaptchaReq, payload);
       if (response.success) {
-        message.success('发送成功');
+        myMessage.success('发送成功');
       } else {
-        message.warning(response.msg || '发送失败');
+        myMessage.warning(response.msg || '发送失败');
       }
     },
 
