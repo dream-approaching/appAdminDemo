@@ -1,87 +1,117 @@
+/* eslint-disable */
+import 'braft-editor/dist/index.css';
 import React from 'react';
-import { connect } from 'dva';
-import { Modal } from 'antd';
-import GradeOne from '@/components/PageComponent/KindsSites/gradeOne';
+import BraftEditor from 'braft-editor';
+import { ContentUtils } from 'braft-utils';
+import './index.less';
 
-const testData = [
-  {
-    id: '1',
-    mingcheng: '海报',
-    tupian: 'tupian1',
-    zhuangtai: '上线',
-    jiekou: '2.0',
-    qudao: 'APP store',
-    kaishi: '2019-03-29 10:00:00',
-    jieshu: '2019-03-29 10:00:00',
-    url: 'https://www.test.com',
-  },
-  {
-    id: '3',
-    mingcheng: '天气',
-    tupian: 'tupian3',
-    zhuangtai: '上线',
-    jiekou: '3.0',
-    qudao: 'APP store',
-    kaishi: '2019-03-29 10:00:00',
-    jieshu: '2019-03-29 10:00:00',
-    url: 'https://www.test.com',
-  },
-  {
-    id: '2',
-    mingcheng: '阿里图标',
-    tupian: 'tupian2',
-    zhuangtai: '下线',
-    jiekou: '2.1',
-    qudao: 'APP store',
-    kaishi: '2019-03-29 10:00:00',
-    jieshu: '2019-03-29 10:00:00',
-    url: 'https://www.test.com',
-  },
-];
-
-@connect(({ chart, loading }) => ({
-  chart,
-  loading: loading.effects['chart/fetch'],
-}))
-class GradeOneH5 extends React.Component {
-  state = {
-    // selectItem: {},
-  };
-
-  submitSearch = data => {
-    console.log(data);
-  };
-
-  deleteAction = item => {
-    Modal.confirm({
-      title: `您确定要删除该条记录?`,
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        console.log('delete ok', item);
-      },
-      onCancel() {},
-    });
-  };
-
-  showModal = (type, modalTitle) => async item => {
-    console.log(item, type, modalTitle);
-    const { modalForm } = this.pageComponent;
-    modalForm.showModal(type, modalTitle);
+class BarBlockComponent extends React.Component {
+  // 注意：通过blockRendererFn定义的block，无法在编辑器中直接删除，需要在组件中增加删除按钮
+  removeBarBlock = () => {
+    this.props.blockProps.editor.setValue(
+      ContentUtils.removeBlock(this.props.blockProps.editorState, this.props.block)
+    );
   };
 
   render() {
+    const blockData = this.props.block.getData();
+    const dataB = blockData.get('dataB');
+
     return (
-      <GradeOne
-        ref={ref => (this.pageComponent = ref)}
-        submitSearch={this.submitSearch}
-        deleteAction={this.deleteAction}
-        showModal={this.showModal}
-        dataSource={testData}
-      />
+      <div className="bar-block-component">
+        <h2>{`Hello ${dataB}!`}</h2>
+        <button className="button-remove" onClick={this.removeBarBlock}>
+          <i className="bfi-bin" />
+        </button>
+      </div>
     );
   }
 }
 
-export default GradeOneH5;
+// 声明blockRendererFn
+const blockRendererFn = (block, { editor, editorState }) => {
+  if (block.getType() === 'block-bar') {
+    return {
+      component: BarBlockComponent,
+      editable: false,
+      props: { editor, editorState }, // 此处传入的内容可以在组件中通过this.props.blockProps获取到
+    };
+  }
+};
+
+const blockImportFn = (nodeName, node) => {
+  if (nodeName === 'div' && node.classList.contains('my-block-foo')) {
+    const dataA = node.dataset.a;
+
+    return {
+      type: 'block-foo',
+      data: {
+        dataA,
+      },
+    };
+  }
+
+  if (nodeName === 'div' && node.classList.contains('my-block-bar')) {
+    const text = node.querySelector('span').innerText;
+    const dataB = node.dataset.b;
+
+    return {
+      type: 'block-bar',
+      data: {
+        text,
+        dataB,
+      },
+    };
+  }
+};
+
+// 自定义block输出转换器，用于将不同的block转换成不同的html内容，通常与blockImportFn中定义的输入转换规则相对应
+const blockExportFn = (contentState, block) => {
+  if (block.type === 'block-bar') {
+    const { dataB } = block.data;
+
+    return {
+      start: `<div class="my-block-bar" data-b="${dataB}">`,
+      end: '</div>',
+    };
+  }
+};
+
+// 定义一段html，请留意其内容与上文定义的输入/输出转换器的关联性
+const initialContent = `<p></p>
+<div class="my-block-bar" data-b="1234567"><span>ABCDEFG</span></div>
+<p></p>`;
+
+export default class BasicDemo extends React.Component {
+  state = {
+    // 注意： 使用createEditorState时，需要将上文定义的blockImportFn和blockExportFn作为第二个对象参数的成员传入
+    editorState: BraftEditor.createEditorState(initialContent, { blockImportFn, blockExportFn }),
+  };
+
+  handleChange = editorState => {
+    this.setState({
+      editorState,
+    });
+  };
+
+  render() {
+    const { editorState, outputHTML } = this.state;
+
+    // 在组件中传入上文定义的blockRenderMap、blockRendererFn
+    // 并将blockImportFn和blockExportFn传入组件的converts属性
+    return (
+      <div>
+        <div className="editor-wrapper">
+          <BraftEditor
+            value={editorState}
+            onChange={this.handleChange}
+            blockRendererFn={blockRendererFn}
+            converts={{ blockImportFn, blockExportFn }}
+          />
+        </div>
+        <h5>输出内容</h5>
+        <div className="output-content">{outputHTML}</div>
+      </div>
+    );
+  }
+}
