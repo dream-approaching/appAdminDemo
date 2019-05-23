@@ -20,7 +20,7 @@ class Explore extends React.Component {
   };
 
   componentDidMount() {
-    // this.queryExploreListDispatch();
+    this.queryExploreListDispatch();
   }
 
   queryExploreListDispatch = params => {

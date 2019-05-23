@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { Input, Icon, Form, Radio, Tag, Button, Row, Col } from 'antd';
+import { Input, Icon, Form, Radio, Tag, Button, Col } from 'antd';
 import BraftEditor from 'braft-editor';
 import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
@@ -8,6 +8,7 @@ import MyUpload from '@/components/MyUpload';
 import { connect } from 'dva';
 import { ContentUtils } from 'braft-utils';
 import LabelModal from '@/components/LabelModal';
+import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { preview } from './preview';
 import styles from './index.less';
 import { myMessage } from '../MyMessage';
@@ -38,13 +39,58 @@ const unitExportFn = (unit, type, target) => {
   return `${unit}px`;
 };
 
+const blockImportFn = (nodeName, node) => {
+  if (nodeName === 'div' && node.classList.contains('my-block-foo')) {
+    const dataA = node.dataset.a;
+
+    return {
+      type: 'block-foo',
+      data: {
+        dataA,
+      },
+    };
+  }
+
+  if (nodeName === 'div' && node.classList.contains('my-block-bar')) {
+    const text = node.querySelector('span').innerText;
+    const dataB = node.dataset.b;
+
+    return {
+      type: 'block-bar',
+      data: {
+        text,
+        dataB,
+      },
+    };
+  }
+};
+
+// 自定义block输出转换器，用于将不同的block转换成不同的html内容，通常与blockImportFn中定义的输入转换规则相对应
 const blockExportFn = (contentState, block) => {
+  if (block.type === 'block-bar') {
+    const { dataB } = block.data;
+
+    return {
+      start: `<div class="my-block-bar" data-b="${dataB}">`,
+      end: '</div>',
+    };
+  }
   const previousBlock = contentState.getBlockBefore(block.key);
 
   if (block.type === 'unstyled' && previousBlock && previousBlock.getType() === 'atomic') {
     return {
       start: '',
       end: '',
+    };
+  }
+};
+
+const blockRendererFn = (block, { editor, editorState }) => {
+  if (block.getType() === 'block-bar') {
+    return {
+      component: BarBlockComponent,
+      editable: false,
+      props: { editor, editorState }, // 此处传入的内容可以在组件中通过this.props.blockProps获取到
     };
   }
 };
@@ -59,7 +105,8 @@ class EditorPage extends React.Component {
     topImgList: [],
     // editorImgList: [],
     editorState: BraftEditor.createEditorState(
-      '<h3>01 标题1</h3><p style="text-indent:2em;">这个app很好用，是我最新换的一个之一</p><p></p><p></p>'
+      '<h3></h3><div class="media-wrap image-wrap"><img src="http://192.168.0.200:1230/uploads_cms_images/1558611147559_23721.png"/></div>',
+      { blockImportFn, blockExportFn }
     ),
   };
 
@@ -117,28 +164,30 @@ class EditorPage extends React.Component {
     const { title, editorState } = this.state;
     // const { coverList, topImgList, title, editorState } = this.state;
     if (!title.length) return myMessage.warning('请输入文章标题');
-    form.validateFields(['articleType', 'desc', 'coverImg', 'topImg'], (err, values) => {
-      // form.validateFields(['articleType', 'desc'], (err, values) => {
+    // form.validateFields(['articleType', 'desc', 'coverImg', 'topImg'], (err, values) => {
+    form.validateFields(['articleType', 'desc'], (err, values) => {
       if (!err) {
         console.log('Received values of form: ', values);
-        // dispatch({
-        //   type: 'article/addArticleEffect',
-        //   payload: {
-        //     oper: 'add',
-        //     // id: '',
-        //     type: 2,
-        //     img: 'http://192.168.0.200:1230/uploads_cms_images/1558508759313_33879.png',
-        //     // img: coverList[0].response.data.imgurl,
-        //     title,
-        //     // content: '<span>123</span>',
-        //     content: editorState.toHTML(),
-        //     topimg: 'http://192.168.0.200:1230/uploads_cms_images/1558508799841_662.png',
-        //     // topimg: topImgList[0].response.data.imgurl,
-        //     label: '工具',
-        //     status: 1,
-        //   },
-        //   successFn: addSuccessFn,
-        // });
+        dispatch({
+          type: 'article/addArticleEffect',
+          payload: {
+            oper: 'add',
+            // id: '',
+            type: 2,
+            img: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
+            // img: coverList[0].response.data.imgurl,
+            title,
+            // content: '<span>123</span>',
+            content:
+              '<img src="http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png" />',
+            // content: editorState.toHTML(),
+            topimg: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
+            // topimg: topImgList[0].response.data.imgurl,
+            label: '工具',
+            status: 1,
+          },
+          successFn: addSuccessFn,
+        });
       }
     });
   };
@@ -156,7 +205,9 @@ class EditorPage extends React.Component {
     this.setState({
       editorState: ContentUtils.insertHTML(
         editorState,
-        '<p class="custom-class"></p><div class="media-wrap app-con image-wrap float-left" style="float:left"><img src="https://margox.cn/wp-content/uploads/2018/09/IMG_9508.jpg" width="87" height="87.125" style="width:87px;height:87.125px"/></div>01 标题1<p>这个app很好用，是我最新换的一个之一</p><p></p><p></p>'
+        `<p></p>
+<div class="my-block-bar" data-b="1234567"><span>ABCDEFG</span></div>
+<p></p>`
       ),
     });
     this.braftFinder = this.editorInstance.getFinderInstance();
@@ -212,10 +263,6 @@ class EditorPage extends React.Component {
       { key: 2, value: '应用推荐' },
       { key: 3, value: '互动话题' },
     ];
-    const formItemLayout = {
-      labelCol: { span: 4 },
-      wrapperCol: { span: 20 },
-    };
     return (
       <div className={styles.editorCon}>
         <div className={styles.editorHeader}>
@@ -235,8 +282,9 @@ class EditorPage extends React.Component {
         <div className={styles.editBody}>
           <div className={styles.editBodyLeft}>
             <BraftEditor
-              converts={{ unitImportFn, unitExportFn, blockExportFn }}
+              converts={{ unitImportFn, unitExportFn, blockExportFn, blockImportFn }}
               value={editorState}
+              blockRendererFn={blockRendererFn}
               onChange={this.handleEditorChange}
               onSave={this.handleSubmitContent}
               extendControls={extendControls}

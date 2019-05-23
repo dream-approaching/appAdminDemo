@@ -33,7 +33,6 @@ class MyUpload extends React.Component {
     await this.setState({
       imgSize: file.size,
       imgType: file.type.split('/')[1],
-      imgContent: encodeURI(file.thumbUrl),
     });
     return this.checkImageWH(file, width, height);
   };
@@ -61,8 +60,9 @@ class MyUpload extends React.Component {
         };
         image.onerror = reject;
         image.src = src;
+        console.log('%cimage.src:', 'color: #0e93e0;background: #aaefe5;', image.src);
         await this.setState({
-          imgContent: encodeURI(image.src),
+          imgContent: image.src.split(',')[1],
         });
       };
       filereader.readAsDataURL(file);
@@ -73,7 +73,7 @@ class MyUpload extends React.Component {
     const { login, ...rest } = this.props;
     const { loginInfo } = login;
     const { imgContent, imgSize, imgType } = this.state;
-    console.log('%cimgContent:', 'color: #0e93e0;background: #aaefe5;', imgContent);
+    // console.log('%cimgContent:', 'color: #0e93e0;background: #aaefe5;', imgContent);
     return (
       <Upload
         action={`${baseUrl}/interface/v1/js/user/auth/upload_picture`}

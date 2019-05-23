@@ -1,32 +1,8 @@
-/* eslint-disable */
 import 'braft-editor/dist/index.css';
 import React from 'react';
 import BraftEditor from 'braft-editor';
-import { ContentUtils } from 'braft-utils';
+import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import './index.less';
-
-class BarBlockComponent extends React.Component {
-  // 注意：通过blockRendererFn定义的block，无法在编辑器中直接删除，需要在组件中增加删除按钮
-  removeBarBlock = () => {
-    this.props.blockProps.editor.setValue(
-      ContentUtils.removeBlock(this.props.blockProps.editorState, this.props.block)
-    );
-  };
-
-  render() {
-    const blockData = this.props.block.getData();
-    const dataB = blockData.get('dataB');
-
-    return (
-      <div className="bar-block-component">
-        <h2>{`Hello ${dataB}!`}</h2>
-        <button className="button-remove" onClick={this.removeBarBlock}>
-          <i className="bfi-bin" />
-        </button>
-      </div>
-    );
-  }
-}
 
 // 声明blockRendererFn
 const blockRendererFn = (block, { editor, editorState }) => {
