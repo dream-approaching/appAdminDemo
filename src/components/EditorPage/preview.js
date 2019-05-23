@@ -13,6 +13,21 @@ export const preview = body => {
         overflow: auto;
         background-color: #fff;
       }
+      .my-block-bar  {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 8px;
+        background-color: lightblue;
+        box-shadow: 0 5px 20px rgba(192, 57, 43, 0.1);
+      }
+      .bar-block-left {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
       .container {
         box-sizing: border-box;
         width: 1000px;
@@ -106,7 +121,9 @@ export const preview = body => {
         var scale = 0;
         var tid;
         var flexible = lib.flexible || (lib.flexible = {});
-
+        var a = document.getElementsByClassName('my-block-bar')[0]
+        const { name, desc, logo } = a.dataset;
+        a.innerHTML = '<div class="bar-block-left"><div><img alt="download" src="'+logo+'"></div><div class="bar-block-app"><p>'+name+'</p><p>'+desc+'</p></div></div><div><img alt="download" src="'+logo+'"></div>'
         if (metaEl) {
           console.warn('将根据已有的meta标签来设置缩放比例');
           var match = metaEl.getAttribute('content').match(/initial\-scale=([\d\.]+)/);

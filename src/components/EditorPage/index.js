@@ -1,89 +1,35 @@
-/* eslint-disable */
+// /* eslint-disable */
 import React from 'react';
-import { Input, Icon, Form, Radio, Tag, Button, Col } from 'antd';
+import { Input, Button } from 'antd';
 import BraftEditor from 'braft-editor';
 import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
 import MyUpload from '@/components/MyUpload';
 import { connect } from 'dva';
 import { ContentUtils } from 'braft-utils';
-import LabelModal from '@/components/LabelModal';
+import Immutable from 'immutable';
 import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
+import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
-import { myMessage } from '../MyMessage';
+// import { myMessage } from '../MyMessage';
+import EditorFooter from './FooterActionBar';
 
-const RadioGroup = Radio.Group;
-const { TextArea } = Input;
-
-const sizeBase = 23.4375;
-const unitImportFn = (unit, type, source) => {
-  // type为单位类型，例如font-size等
-  // source为输入来源，可能值为create或paste
-  console.log(type, source);
-
-  // 此函数的返回结果，需要过滤掉单位，只返回数值
-  if (unit.indexOf('rem')) {
-    return parseFloat(unit, 10) * sizeBase;
-  }
-  return parseFloat(unit, 10);
+const FooBlockElement = props => {
+  return <div className="foo-block-element">{props.children}</div>;
 };
 
-// 定义输出转换函数
-const unitExportFn = (unit, type, target) => {
-  if (type === 'line-height') return unit;
-  // target的值可能是html或者editor，对应输出到html和在编辑器中显示这两个场景
-  if (target === 'html') {
-    return `${unit / sizeBase}rem`;
-  }
-  return `${unit}px`;
+// 定义block-foo的容器组件，用于包裹单个独立或多个连续的block-foo，这一项是可选的
+const FooBlockWrapper = props => {
+  return <div className="foo-block-wrapper">{props.children}</div>;
 };
 
-const blockImportFn = (nodeName, node) => {
-  if (nodeName === 'div' && node.classList.contains('my-block-foo')) {
-    const dataA = node.dataset.a;
-
-    return {
-      type: 'block-foo',
-      data: {
-        dataA,
-      },
-    };
-  }
-
-  if (nodeName === 'div' && node.classList.contains('my-block-bar')) {
-    const text = node.querySelector('span').innerText;
-    const dataB = node.dataset.b;
-
-    return {
-      type: 'block-bar',
-      data: {
-        text,
-        dataB,
-      },
-    };
-  }
-};
-
-// 自定义block输出转换器，用于将不同的block转换成不同的html内容，通常与blockImportFn中定义的输入转换规则相对应
-const blockExportFn = (contentState, block) => {
-  if (block.type === 'block-bar') {
-    const { dataB } = block.data;
-
-    return {
-      start: `<div class="my-block-bar" data-b="${dataB}">`,
-      end: '</div>',
-    };
-  }
-  const previousBlock = contentState.getBlockBefore(block.key);
-
-  if (block.type === 'unstyled' && previousBlock && previousBlock.getType() === 'atomic') {
-    return {
-      start: '',
-      end: '',
-    };
-  }
-};
+const blockRenderMap = Immutable.Map({
+  'block-foo': {
+    element: FooBlockElement,
+    wrapper: <FooBlockWrapper />,
+  },
+});
 
 const blockRendererFn = (block, { editor, editorState }) => {
   if (block.getType() === 'block-bar') {
@@ -101,13 +47,8 @@ const blockRendererFn = (block, { editor, editorState }) => {
 class EditorPage extends React.Component {
   state = {
     title: '测试编辑器',
-    coverList: [],
-    topImgList: [],
     // editorImgList: [],
-    editorState: BraftEditor.createEditorState(
-      '<h3></h3><div class="media-wrap image-wrap"><img src="http://192.168.0.200:1230/uploads_cms_images/1558611147559_23721.png"/></div>',
-      { blockImportFn, blockExportFn }
-    ),
+    editorState: BraftEditor.createEditorState('<h3>123</h3>', { blockImportFn, blockExportFn }),
   };
 
   handleChageTitle = e => {
@@ -125,10 +66,6 @@ class EditorPage extends React.Component {
 
   handleEditorChange = editorState => {
     this.setState({ editorState });
-  };
-
-  handleChangePageSize = (current, pageSize) => {
-    console.log(current, pageSize);
   };
 
   handleChangeUpload = imgType => ({ file, fileList }) => {
@@ -158,38 +95,30 @@ class EditorPage extends React.Component {
     window.previewWindow.document.close();
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    const { dispatch, form, addSuccessFn } = this.props;
-    const { title, editorState } = this.state;
+  handleSubmit = () => {
+    // const { dispatch, addSuccessFn } = this.props;
     // const { coverList, topImgList, title, editorState } = this.state;
-    if (!title.length) return myMessage.warning('请输入文章标题');
-    // form.validateFields(['articleType', 'desc', 'coverImg', 'topImg'], (err, values) => {
-    form.validateFields(['articleType', 'desc'], (err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-        dispatch({
-          type: 'article/addArticleEffect',
-          payload: {
-            oper: 'add',
-            // id: '',
-            type: 2,
-            img: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
-            // img: coverList[0].response.data.imgurl,
-            title,
-            // content: '<span>123</span>',
-            content:
-              '<img src="http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png" />',
-            // content: editorState.toHTML(),
-            topimg: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
-            // topimg: topImgList[0].response.data.imgurl,
-            label: '工具',
-            status: 1,
-          },
-          successFn: addSuccessFn,
-        });
-      }
-    });
+    // if (!title.length) return myMessage.warning('请输入文章标题');
+    // dispatch({
+    //   type: 'article/addArticleEffect',
+    //   payload: {
+    //     oper: 'add',
+    //     // id: '',
+    //     type: 2,
+    //     img: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
+    //     // img: coverList[0].response.data.imgurl,
+    //     title,
+    //     // content: '<span>123</span>',
+    //     content:
+    //       '<img src="http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png" />',
+    //     // content: editorState.toHTML(),
+    //     topimg: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
+    //     // topimg: topImgList[0].response.data.imgurl,
+    //     label: '工具',
+    //     status: 1,
+    //   },
+    //   successFn: addSuccessFn,
+    // });
   };
 
   handleSaveTemplate = () => {
@@ -202,12 +131,20 @@ class EditorPage extends React.Component {
 
   handleChooseApp = () => {
     const { editorState } = this.state;
+    const apiData = {
+      name: '网易云音乐2',
+      desc: 'Hello',
+      logo: 'https://gw.alipayobjects.com/zos/rmsportal/UTjFYEzMSYVwzxIGVhMu.png',
+    };
     this.setState({
       editorState: ContentUtils.insertHTML(
         editorState,
         `<p></p>
-<div class="my-block-bar" data-b="1234567"><span>ABCDEFG</span></div>
-<p></p>`
+        <div class="my-block-foo" data-a="World!">Hello Foo</div>
+          <div class="my-block-bar"  data-name="${apiData.name}" data-desc="${
+          apiData.desc
+        }" data-logo="${apiData.logo}"></div>
+          <p></p>`
       ),
     });
     this.braftFinder = this.editorInstance.getFinderInstance();
@@ -221,16 +158,9 @@ class EditorPage extends React.Component {
   };
 
   render() {
-    const { editorState, coverList, topImgList, title } = this.state;
-    const { form, cancelAddAction } = this.props;
-    const { getFieldDecorator } = form;
+    const { editorState, title } = this.state;
+    const { cancelAddAction } = this.props;
 
-    const uploadButton = (
-      <div>
-        <Icon type="plus" />
-        <div className="ant-upload-text">Upload</div>
-      </div>
-    );
     const extendControls = [
       {
         key: 'addApp',
@@ -258,11 +188,6 @@ class EditorPage extends React.Component {
         ),
       },
     ];
-    const option = [
-      { key: 1, value: '专题文章' },
-      { key: 2, value: '应用推荐' },
-      { key: 3, value: '互动话题' },
-    ];
     return (
       <div className={styles.editorCon}>
         <div className={styles.editorHeader}>
@@ -276,7 +201,13 @@ class EditorPage extends React.Component {
             <MyButton onClick={cancelAddAction}>取消</MyButton>
             <MyButton onClick={this.handleSaveTemplate}>存为模板</MyButton>
             <MyButton onClick={this.handlePreview}>预览</MyButton>
-            <MyButton onClick={this.handleSubmit}>保存</MyButton>
+            <MyButton
+              onClick={() => {
+                this.footerRef.handleSubmit(this.handleSubmit);
+              }}
+            >
+              保存
+            </MyButton>
           </div>
         </div>
         <div className={styles.editBody}>
@@ -285,123 +216,22 @@ class EditorPage extends React.Component {
               converts={{ unitImportFn, unitExportFn, blockExportFn, blockImportFn }}
               value={editorState}
               blockRendererFn={blockRendererFn}
+              blockRenderMap={blockRenderMap}
               onChange={this.handleEditorChange}
               onSave={this.handleSubmitContent}
               extendControls={extendControls}
               ref={instance => (this.editorInstance = instance)}
             />
-            <div className={styles.footerCon}>
-              <Form labelAlign="left" layout="inline">
-                <Col span={24}>
-                  <Form.Item label="文章类型" key="文章类型">
-                    {getFieldDecorator('articleType', {
-                      rules: [
-                        {
-                          required: true,
-                          message: '请选择文章类型',
-                        },
-                      ],
-                      initialValue: '应用推荐',
-                    })(
-                      <RadioGroup>
-                        {option.map(optionItem => {
-                          return (
-                            <Radio key={optionItem.key} value={optionItem.value}>
-                              {optionItem.value}
-                            </Radio>
-                          );
-                        })}
-                      </RadioGroup>
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={24}>
-                  <Form.Item label="标签" key="标签">
-                    {getFieldDecorator('label', {
-                      rules: [{ required: true }],
-                    })(
-                      <div>
-                        <span>
-                          <Tag closable color="magenta">
-                            工具
-                          </Tag>
-                          <Tag closable color="magenta">
-                            社交
-                          </Tag>
-                          <Tag closable color="magenta">
-                            阅读
-                          </Tag>
-                        </span>
-                        <Button onClick={this.handleShowLabelModal} size="small">
-                          选择
-                        </Button>
-                      </div>
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label="摘要" key="摘要">
-                    {getFieldDecorator('desc', {
-                      rules: [
-                        {
-                          required: true,
-                          message: '请输入摘要',
-                        },
-                      ],
-                      initialValue: '摘要',
-                    })(<TextArea rows={4} />)}
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label="首页封面图" key="首页封面图">
-                    {getFieldDecorator('coverImg', {
-                      rules: [
-                        {
-                          required: true,
-                          message: '请上传文章封面图',
-                        },
-                      ],
-                    })(
-                      <MyUpload
-                        listType="picture-card"
-                        fileList={coverList}
-                        onChange={this.handleChangeUpload('cover')}
-                      >
-                        {coverList.length >= 1 ? null : uploadButton}
-                      </MyUpload>
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label="文章顶部图" key="文章顶部图">
-                    {getFieldDecorator('topImg', {
-                      rules: [
-                        {
-                          required: true,
-                          message: '请上传文章顶部图',
-                        },
-                      ],
-                    })(
-                      <MyUpload
-                        listType="picture-card"
-                        fileList={topImgList}
-                        onChange={this.handleChangeUpload('topImg')}
-                      >
-                        {topImgList.length >= 1 ? null : uploadButton}
-                      </MyUpload>
-                    )}
-                  </Form.Item>
-                </Col>
-              </Form>
-            </div>
+            <EditorFooter
+              wrappedComponentRef={ref => (this.footerRef = ref)}
+              handleChangeUpload={this.handleChangeUpload}
+            />
           </div>
           <div className={styles.editBodyRight} />
         </div>
-        <LabelModal ref={ref => (this.labelModalRef = ref)} />
       </div>
     );
   }
 }
 
-const EditorPageForm = Form.create()(EditorPage);
-export default EditorPageForm;
+export default EditorPage;
