@@ -130,14 +130,26 @@ class EditorPage extends React.Component {
           <p></p>`
       ),
     });
-    this.braftFinder = this.editorInstance.getFinderInstance();
-    this.braftFinder.addItems([
-      {
-        id: new Date().getTime(),
-        type: 'IMAGE',
-        url: 'https://margox.cn/wp-content/uploads/2018/09/IMG_9508.jpg',
-      },
-    ]);
+  };
+
+  handleChooseApp2 = () => {
+    const { editorState } = this.state;
+    const apiData = {
+      name: '有道云笔记',
+      desc: '有道云笔记笔记本笔记本',
+      logo:
+        'https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3461543860,1107367637&fm=173&app=49&f=JPEG?w=218&h=146&s=86355F864942A49455CCC02203000003',
+    };
+    this.setState({
+      editorState: ContentUtils.insertHTML(
+        editorState,
+        `<p></p>
+          <div class="app-block-bar"  data-name="${apiData.name}" data-desc="${
+          apiData.desc
+        }" data-logo="${apiData.logo}"></div>
+          <p></p>`
+      ),
+    });
   };
 
   render() {
@@ -159,12 +171,7 @@ class EditorPage extends React.Component {
         type: 'component',
         component: (
           <MyUpload onChange={this.handleChangeUpload('editorImg')} showUploadList={false}>
-            {/* 这里的按钮最好加上type="button"，以避免在表单容器中触发表单提交，用Antd的Button组件则无需如此 */}
-            <Button
-              type="button"
-              className="control-item button upload-button"
-              data-title="插入图片"
-            >
+            <Button className="control-item button upload-button" data-title="插入图片">
               插入图片
             </Button>
           </MyUpload>

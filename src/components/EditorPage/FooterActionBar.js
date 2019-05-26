@@ -73,7 +73,7 @@ class FooterActionBar extends React.Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={24}>
+          <Col span={8}>
             <Form.Item label="标签" key="标签">
               {getFieldDecorator('label', {
                 rules: [{ required: true }],
@@ -95,6 +95,18 @@ class FooterActionBar extends React.Component {
                   </Button>
                 </div>
               )}
+            </Form.Item>
+          </Col>
+          <Col span={16}>
+            <Form.Item label="关联App标签" key="关联App标签">
+              {getFieldDecorator('relation', {
+                rules: [
+                  {
+                    required: true,
+                    message: '必填',
+                  },
+                ],
+              })(<Input placeholder="石墨文档" />)}
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -129,6 +141,10 @@ class FooterActionBar extends React.Component {
                 </MyUpload>
               )}
             </Form.Item>
+            <RadioGroup defaultValue="黑色底" className={styles.coverBtn}>
+              <Radio value="黑色底">黑色底</Radio>
+              <Radio value="白色底">白色底</Radio>
+            </RadioGroup>
           </Col>
           <Col span={8}>
             <Form.Item label="文章顶部图" key="文章顶部图">

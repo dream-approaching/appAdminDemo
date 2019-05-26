@@ -27,7 +27,7 @@ export const preview = body => {
       .app-block-left {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        flex: 1;
       }
       .app-icon {
         min-width: 1.653rem;
@@ -157,11 +157,13 @@ export const preview = body => {
         var tid;
         var flexible = lib.flexible || (lib.flexible = {});
 
-        var reg = /:([1-9]\d*|0)(.\d*)?px/g
-        var a = document.getElementsByClassName('app-block-bar')[0]
-        const { name, desc, logo } = a.dataset;
-        a.innerHTML = '<div class="app-block-left"><div class="app-icon"><img alt="download" src="'+logo+'"></div><div class="app-content"><span class="app-title">'+name+'</span><span class="app-desc">'+desc+'</span></div></div><div class="downloadBtn"><span>下载</span></div>'
-        document.body.innerHTML.replace(reg, ':$1/10rem')
+        var appArr = document.getElementsByClassName('app-block-bar')
+        for (var i = 0, len = appArr.length; i < len; i++) {
+          const { name, desc, logo } = appArr[i].dataset;
+          appArr[i].innerHTML = '<div class="app-block-left"><div class="app-icon"><img alt="download" src="'+logo+'"></div><div class="app-content"><span class="app-title">'+name+'</span><span class="app-desc">'+desc+'</span></div></div><div class="downloadBtn"><span>下载</span></div>'
+        }
+        
+        
 
 
 
