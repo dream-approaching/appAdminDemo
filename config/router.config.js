@@ -31,51 +31,51 @@ export default [
         authority: ['admin', 'user'],
         component: './explore/explore',
       },
-      {
-        path: '/androidPlatform',
-        name: 'Android客户端',
-        icon: 'android',
-        routes: [
-          {
-            path: '/androidPlatform/banner',
-            name: 'Banner',
-            component: './androidPlatform/banner/banner',
-          },
-        ],
-      },
-      {
-        path: '/h5Website',
-        name: 'H5 导航网站',
-        icon: 'mobile',
-        routes: [
-          {
-            path: '/h5Website/kindsSite',
-            name: '分类网址',
-            component: '../components/PageComponent/KindsSites',
-            routes: [
-              {
-                path: '/h5Website/kindsSite',
-                redirect: '/h5Website/kindsSite/gradeOne',
-              },
-              {
-                path: '/h5Website/kindsSite/gradeOne',
-                name: '一级分类',
-                component: './h5Website/kindsSite/gradeOne',
-              },
-              {
-                path: '/h5Website/kindsSite/gradeTwo',
-                name: '二级分类',
-                component: './h5Website/kindsSite/gradeTwo',
-              },
-              {
-                path: '/h5Website/kindsSite/gradeThree',
-                name: '三级分类',
-                component: './h5Website/kindsSite/gradeThree',
-              },
-            ],
-          },
-        ],
-      },
+      // {
+      //   path: '/androidPlatform',
+      //   name: 'Android客户端',
+      //   icon: 'android',
+      //   routes: [
+      //     {
+      //       path: '/androidPlatform/banner',
+      //       name: 'Banner',
+      //       component: './androidPlatform/banner/banner',
+      //     },
+      //   ],
+      // },
+      // {
+      //   path: '/h5Website',
+      //   name: 'H5 导航网站',
+      //   icon: 'mobile',
+      //   routes: [
+      //     {
+      //       path: '/h5Website/kindsSite',
+      //       name: '分类网址',
+      //       component: '../components/PageComponent/KindsSites',
+      //       routes: [
+      //         {
+      //           path: '/h5Website/kindsSite',
+      //           redirect: '/h5Website/kindsSite/gradeOne',
+      //         },
+      //         {
+      //           path: '/h5Website/kindsSite/gradeOne',
+      //           name: '一级分类',
+      //           component: './h5Website/kindsSite/gradeOne',
+      //         },
+      //         {
+      //           path: '/h5Website/kindsSite/gradeTwo',
+      //           name: '二级分类',
+      //           component: './h5Website/kindsSite/gradeTwo',
+      //         },
+      //         {
+      //           path: '/h5Website/kindsSite/gradeThree',
+      //           name: '三级分类',
+      //           component: './h5Website/kindsSite/gradeThree',
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // },
       {
         component: '404',
       },
