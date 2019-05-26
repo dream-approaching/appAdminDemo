@@ -1,4 +1,4 @@
-const sizeBase = 23.4375;
+const sizeBase = 37.5;
 export const unitImportFn = (unit, type, source) => {
   // type为单位类型，例如font-size等
   // source为输入来源，可能值为create或paste
@@ -22,17 +22,7 @@ export const unitExportFn = (unit, type, target) => {
 };
 
 export const blockImportFn = (nodeName, node) => {
-  if (nodeName === 'div' && node.classList.contains('my-block-foo')) {
-    const dataA = node.dataset.a;
-
-    return {
-      type: 'block-foo',
-      data: {
-        dataA,
-      },
-    };
-  }
-  if (nodeName === 'div' && node.classList.contains('my-block-bar')) {
+  if (nodeName === 'div' && node.classList.contains('app-block-bar')) {
     const { name, desc, logo } = node.dataset;
 
     return {
@@ -48,19 +38,11 @@ export const blockImportFn = (nodeName, node) => {
 
 // 自定义block输出转换器，用于将不同的block转换成不同的html内容，通常与blockImportFn中定义的输入转换规则相对应
 export const blockExportFn = (contentState, block) => {
-  if (block.type === 'block-foo') {
-    const { dataA } = block.data;
-
-    return {
-      start: `<div class="my-block-foo" data-a="${dataA}">`,
-      end: '</div>',
-    };
-  }
   if (block.type === 'block-bar') {
     const { name, desc, logo } = block.data;
 
     return {
-      start: `<div class="my-block-bar" data-name="${name}" data-desc="${desc}" data-logo="${logo}">`,
+      start: `<div class="app-block-bar" data-name="${name}" data-desc="${desc}" data-logo="${logo}">`,
       end: '</div>',
     };
   }

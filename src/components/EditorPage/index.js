@@ -7,29 +7,12 @@ import 'braft-editor/dist/index.css';
 import MyUpload from '@/components/MyUpload';
 import { connect } from 'dva';
 import { ContentUtils } from 'braft-utils';
-import Immutable from 'immutable';
 import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
 // import { myMessage } from '../MyMessage';
 import EditorFooter from './FooterActionBar';
-
-const FooBlockElement = props => {
-  return <div className="foo-block-element">{props.children}</div>;
-};
-
-// 定义block-foo的容器组件，用于包裹单个独立或多个连续的block-foo，这一项是可选的
-const FooBlockWrapper = props => {
-  return <div className="foo-block-wrapper">{props.children}</div>;
-};
-
-const blockRenderMap = Immutable.Map({
-  'block-foo': {
-    element: FooBlockElement,
-    wrapper: <FooBlockWrapper />,
-  },
-});
 
 const blockRendererFn = (block, { editor, editorState }) => {
   if (block.getType() === 'block-bar') {
@@ -132,16 +115,16 @@ class EditorPage extends React.Component {
   handleChooseApp = () => {
     const { editorState } = this.state;
     const apiData = {
-      name: '网易云音乐2',
-      desc: 'Hello',
-      logo: 'https://gw.alipayobjects.com/zos/rmsportal/UTjFYEzMSYVwzxIGVhMu.png',
+      name: '讯飞语记',
+      desc: '只需动动嘴就能记录生活的点点滴滴',
+      logo:
+        'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
     };
     this.setState({
       editorState: ContentUtils.insertHTML(
         editorState,
         `<p></p>
-        <div class="my-block-foo" data-a="World!">Hello Foo</div>
-          <div class="my-block-bar"  data-name="${apiData.name}" data-desc="${
+          <div class="app-block-bar"  data-name="${apiData.name}" data-desc="${
           apiData.desc
         }" data-logo="${apiData.logo}"></div>
           <p></p>`
@@ -216,7 +199,6 @@ class EditorPage extends React.Component {
               converts={{ unitImportFn, unitExportFn, blockExportFn, blockImportFn }}
               value={editorState}
               blockRendererFn={blockRendererFn}
-              blockRenderMap={blockRenderMap}
               onChange={this.handleEditorChange}
               onSave={this.handleSubmitContent}
               extendControls={extendControls}

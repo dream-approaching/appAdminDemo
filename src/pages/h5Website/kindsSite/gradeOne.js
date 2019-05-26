@@ -16,18 +16,7 @@ const blockRendererFn = (block, { editor, editorState }) => {
 };
 
 const blockImportFn = (nodeName, node) => {
-  if (nodeName === 'div' && node.classList.contains('my-block-foo')) {
-    const dataA = node.dataset.a;
-
-    return {
-      type: 'block-foo',
-      data: {
-        dataA,
-      },
-    };
-  }
-
-  if (nodeName === 'div' && node.classList.contains('my-block-bar')) {
+  if (nodeName === 'div' && node.classList.contains('app-block-bar')) {
     const text = node.querySelector('span').innerText;
     const dataB = node.dataset.b;
 
@@ -47,7 +36,7 @@ const blockExportFn = (contentState, block) => {
     const { dataB } = block.data;
 
     return {
-      start: `<div class="my-block-bar" data-b="${dataB}">`,
+      start: `<div class="app-block-bar" data-b="${dataB}">`,
       end: '</div>',
     };
   }
@@ -55,7 +44,7 @@ const blockExportFn = (contentState, block) => {
 
 // 定义一段html，请留意其内容与上文定义的输入/输出转换器的关联性
 const initialContent = `<p></p>
-<div class="my-block-bar" data-b="1234567"><span>ABCDEFG</span></div>
+<div class="app-block-bar" data-b="1234567"><span>ABCDEFG</span></div>
 <p></p>`;
 
 export default class BasicDemo extends React.Component {

@@ -18,18 +18,18 @@ export default class BarBlockComponent extends React.Component {
     const logo = blockData.get('logo');
 
     return (
-      <div className="my-block-bar">
-        <div className="bar-block-left">
-          <div>
+      <div className="app-block-bar">
+        <div className="app-block-left">
+          <div className="app-icon">
             <img alt="download" src={logo} />
           </div>
-          <div className="bar-block-app">
-            <p>{name}</p>
-            <p>{desc}</p>
+          <div className="app-content">
+            <span className="app-title">{name}</span>
+            <span className="app-desc">{desc}</span>
           </div>
         </div>
-        <div>
-          <img alt="download" src={logo} />
+        <div className="downloadBtn">
+          <span>下载</span>
         </div>
       </div>
     );

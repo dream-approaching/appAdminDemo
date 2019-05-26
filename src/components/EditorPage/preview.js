@@ -13,20 +13,55 @@ export const preview = body => {
         overflow: auto;
         background-color: #fff;
       }
-      .my-block-bar  {
+      body {
+        padding: 0 16px;
+      }
+      .app-block-bar {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
         padding: 10px 8px;
-        background-color: lightblue;
-        box-shadow: 0 5px 20px rgba(192, 57, 43, 0.1);
+        border: 1px solid #ddd;
       }
-      .bar-block-left {
+      .app-block-left {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        align-items: center;
+      }
+      .app-icon {
+        min-width: 1.653rem;
+        width: 1.653rem;
+        height: 1.653rem;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .app-icon img {
+        width: 100%;
+        height: 100%;
+      }
+      .app-content {
+        margin-left: 0.426rem;
+      }
+      .app-title {
+        font-size: 0.4rem;
+        color: #333;
+        display: block;
+      }
+      .app-desc {
+        font-size: 0.346rem;
+        color: #707070;
+      }
+      .downloadBtn {
+        background: linear-gradient(180deg, #ff676e, #ff8c60);
+        width: 2.666rem;
+        padding: 8px 0;
+        border-radius: 15px;
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        color: #fff;
+        margin-left: 0.426rem;
       }
       .container {
         box-sizing: border-box;
@@ -121,9 +156,15 @@ export const preview = body => {
         var scale = 0;
         var tid;
         var flexible = lib.flexible || (lib.flexible = {});
-        var a = document.getElementsByClassName('my-block-bar')[0]
+
+        var reg = /:([1-9]\d*|0)(.\d*)?px/g
+        var a = document.getElementsByClassName('app-block-bar')[0]
         const { name, desc, logo } = a.dataset;
-        a.innerHTML = '<div class="bar-block-left"><div><img alt="download" src="'+logo+'"></div><div class="bar-block-app"><p>'+name+'</p><p>'+desc+'</p></div></div><div><img alt="download" src="'+logo+'"></div>'
+        a.innerHTML = '<div class="app-block-left"><div class="app-icon"><img alt="download" src="'+logo+'"></div><div class="app-content"><span class="app-title">'+name+'</span><span class="app-desc">'+desc+'</span></div></div><div class="downloadBtn"><span>下载</span></div>'
+        document.body.innerHTML.replace(reg, ':$1/10rem')
+
+
+
         if (metaEl) {
           console.warn('将根据已有的meta标签来设置缩放比例');
           var match = metaEl.getAttribute('content').match(/initial\-scale=([\d\.]+)/);
