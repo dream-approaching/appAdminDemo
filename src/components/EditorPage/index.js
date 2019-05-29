@@ -8,10 +8,11 @@ import MyUpload from '@/components/MyUpload';
 import { connect } from 'dva';
 import { ContentUtils } from 'braft-utils';
 import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
+import { Base64 } from 'js-base64';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
-// import { myMessage } from '../MyMessage';
+import { myMessage } from '../MyMessage';
 import EditorFooter from './FooterActionBar';
 
 const blockRendererFn = (block, { editor, editorState }) => {
@@ -29,7 +30,9 @@ const blockRendererFn = (block, { editor, editorState }) => {
 }))
 class EditorPage extends React.Component {
   state = {
-    title: '测试编辑器',
+    title: '测试编辑器01',
+    coverList: [],
+    topImgList: [],
     // editorImgList: [],
     editorState: BraftEditor.createEditorState('<h3>123</h3>', { blockImportFn, blockExportFn }),
   };
@@ -51,23 +54,6 @@ class EditorPage extends React.Component {
     this.setState({ editorState });
   };
 
-  handleChangeUpload = imgType => ({ file, fileList }) => {
-    console.log('%cfile:', 'color: #0e93e0;background: #aaefe5;', file);
-    const { editorState } = this.state;
-    this.setState({ [`${imgType}List`]: fileList });
-
-    if (imgType === 'editorImg' && file.status === 'done') {
-      this.setState({
-        editorState: ContentUtils.insertMedias(editorState, [
-          {
-            type: 'IMAGE',
-            url: file.response.data.imgurl,
-          },
-        ]),
-      });
-    }
-  };
-
   handlePreview = () => {
     if (window.previewWindow) {
       window.previewWindow.close();
@@ -79,29 +65,25 @@ class EditorPage extends React.Component {
   };
 
   handleSubmit = () => {
-    // const { dispatch, addSuccessFn } = this.props;
-    // const { coverList, topImgList, title, editorState } = this.state;
-    // if (!title.length) return myMessage.warning('请输入文章标题');
-    // dispatch({
-    //   type: 'article/addArticleEffect',
-    //   payload: {
-    //     oper: 'add',
-    //     // id: '',
-    //     type: 2,
-    //     img: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
-    //     // img: coverList[0].response.data.imgurl,
-    //     title,
-    //     // content: '<span>123</span>',
-    //     content:
-    //       '<img src="http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png" />',
-    //     // content: editorState.toHTML(),
-    //     topimg: 'http://192.168.0.200:1230/uploads_cms_images/1558581044104_34502.png',
-    //     // topimg: topImgList[0].response.data.imgurl,
-    //     label: '工具',
-    //     status: 1,
-    //   },
-    //   successFn: addSuccessFn,
-    // });
+    const { dispatch, addSuccessFn } = this.props;
+    const { coverList, topImgList, title, editorState } = this.state;
+    if (!title.length) return myMessage.warning('请输入文章标题');
+    dispatch({
+      type: 'article/addArticleEffect',
+      payload: {
+        oper: 'add',
+        // id: '',
+        type: 2,
+        img: coverList[0].response.data.imgurl,
+        title,
+        content: Base64.encode(editorState.toHTML()),
+        topimg: topImgList[0].response.data.imgurl,
+        label: '工具',
+        status: 1,
+      },
+      successFn: addSuccessFn,
+    });
+    console.log('Base64.encode(editorState.toHTML())', Base64.encode(editorState.toHTML()));
   };
 
   handleSaveTemplate = () => {
@@ -152,8 +134,25 @@ class EditorPage extends React.Component {
     });
   };
 
+  handleChangeUpload = imgType => ({ file, fileList }) => {
+    const { editorState } = this.state;
+    console.log('%cfile:', 'color: #0e93e0;background: #aaefe5;', file);
+    this.setState({ [`${imgType}List`]: fileList });
+
+    if (imgType === 'editorImg' && file.status === 'done') {
+      this.setState({
+        editorState: ContentUtils.insertMedias(editorState, [
+          {
+            type: 'IMAGE',
+            url: file.response.data.imgurl,
+          },
+        ]),
+      });
+    }
+  };
+
   render() {
-    const { editorState, title } = this.state;
+    const { editorState, title, coverList, topImgList } = this.state;
     const { cancelAddAction } = this.props;
 
     const extendControls = [
@@ -214,6 +213,8 @@ class EditorPage extends React.Component {
             <EditorFooter
               wrappedComponentRef={ref => (this.footerRef = ref)}
               handleChangeUpload={this.handleChangeUpload}
+              coverList={coverList}
+              topImgList={topImgList}
             />
           </div>
           <div className={styles.editBodyRight} />

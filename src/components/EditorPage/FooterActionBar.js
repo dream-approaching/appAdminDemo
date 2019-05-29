@@ -10,11 +10,6 @@ const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
 class FooterActionBar extends React.Component {
-  state = {
-    coverList: [],
-    topImgList: [],
-  };
-
   handleShowLabelModal = () => {
     this.labelModalRef.wrappedInstance.showModal();
   };
@@ -22,8 +17,8 @@ class FooterActionBar extends React.Component {
   handleSubmit = fn => {
     const { form } = this.props;
     // const { coverList, topImgList, title, editorState } = this.state;
-    form.validateFields(['articleType', 'desc', 'coverImg', 'topImg'], (err, values) => {
-      // form.validateFields(['articleType', 'desc'], (err, values) => {
+    // form.validateFields(['articleType', 'desc', 'coverImg', 'topImg'], (err, values) => {
+    form.validateFields(['articleType', 'desc'], (err, values) => {
       if (!err) {
         console.log('Received values of form: ', values);
         fn();
@@ -32,8 +27,7 @@ class FooterActionBar extends React.Component {
   };
 
   render() {
-    const { coverList, topImgList } = this.state;
-    const { form } = this.props;
+    const { form, coverList, topImgList } = this.props;
     const { getFieldDecorator } = form;
 
     const uploadButton = (
@@ -73,7 +67,7 @@ class FooterActionBar extends React.Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={8}>
             <Form.Item label="标签" key="标签">
               {getFieldDecorator('label', {
                 rules: [{ required: true }],
@@ -97,7 +91,7 @@ class FooterActionBar extends React.Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={16}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={16}>
             <Form.Item label="关联App标签" key="关联App标签">
               {getFieldDecorator('relation', {
                 rules: [
@@ -109,7 +103,7 @@ class FooterActionBar extends React.Component {
               })(<Input placeholder="石墨文档" />)}
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={8}>
             <Form.Item label="摘要" key="摘要">
               {getFieldDecorator('desc', {
                 rules: [
@@ -122,7 +116,7 @@ class FooterActionBar extends React.Component {
               })(<TextArea rows={4} />)}
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={24} md={24} lg={12} xl={8}>
             <Form.Item label="首页封面图" key="首页封面图">
               {getFieldDecorator('coverImg', {
                 rules: [
@@ -146,7 +140,7 @@ class FooterActionBar extends React.Component {
               <Radio value="白色底">白色底</Radio>
             </RadioGroup>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={24} md={24} lg={12} xl={8}>
             <Form.Item label="文章顶部图" key="文章顶部图">
               {getFieldDecorator('topImg', {
                 rules: [
