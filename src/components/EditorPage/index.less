@@ -60,14 +60,14 @@
   }
   .app-block-left {
     display: flex;
-    flex-direction: row;
     flex: 1;
+    flex-direction: row;
   }
   .app-icon {
     width: 62px;
     height: 62px;
-    border-radius: 5px;
     overflow: hidden;
+    border-radius: 5px;
   }
   .app-icon img {
     width: 100%;
@@ -77,23 +77,36 @@
     margin-left: 16px;
   }
   .app-title {
-    font-size: 14px;
-    color: #333;
     display: block;
+    color: #333;
+    font-size: 14px;
   }
   .app-desc {
-    font-size: 13px;
     color: #707070;
+    font-size: 13px;
   }
   .downloadBtn {
-    background: linear-gradient(180deg, #ff676e, #ff8c60);
-    width: 100px;
-    padding: 8px 0;
-    border-radius: 15px;
     display: flex;
     justify-content: center;
     align-content: center;
-    color: #fff;
+    width: 100px;
     margin-left: 30px;
+    padding: 8px 0;
+    color: #fff;
+    background: linear-gradient(180deg, #ff676e, #ff8c60);
+    border-radius: 15px;
+  }
+  .previewModal {
+    width: 375px !important;
+    .ant-modal-content {
+      .ant-modal-header,
+      .ant-modal-close {
+        display: none;
+      }
+      .ant-modal-body {
+        min-height: 667px;
+        padding: 0 16px;
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 // /* eslint-disable */
 import React from 'react';
-import { Input, Button } from 'antd';
+import { Input, Button, Modal } from 'antd';
 import BraftEditor from 'braft-editor';
 import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
@@ -9,6 +9,7 @@ import { connect } from 'dva';
 import { ContentUtils } from 'braft-utils';
 import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { Base64 } from 'js-base64';
+import classnames from 'classnames';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
@@ -31,6 +32,7 @@ const blockRendererFn = (block, { editor, editorState }) => {
 class EditorPage extends React.Component {
   state = {
     title: '测试编辑器01',
+    previewModalVisible: false,
     coverList: [],
     topImgList: [],
     // editorImgList: [],
@@ -52,16 +54,6 @@ class EditorPage extends React.Component {
 
   handleEditorChange = editorState => {
     this.setState({ editorState });
-  };
-
-  handlePreview = () => {
-    if (window.previewWindow) {
-      window.previewWindow.close();
-    }
-
-    window.previewWindow = window.open();
-    window.previewWindow.document.write(preview(this.state.editorState.toHTML()));
-    window.previewWindow.document.close();
   };
 
   handleSubmit = () => {
@@ -88,6 +80,39 @@ class EditorPage extends React.Component {
 
   handleSaveTemplate = () => {
     console.log(123);
+  };
+
+  handleShowPreview = async () => {
+    await this.setState({
+      previewModalVisible: true,
+    });
+    const previewDom = document.getElementById('preview');
+    previewDom.innerHTML = preview(this.state.editorState.toHTML());
+    const appArr = previewDom.getElementsByClassName('app-block-bar');
+    for (let i = 0, len = appArr.length; i < len; i++) {
+      const { name, desc, logo } = appArr[i].dataset;
+      appArr[i].innerHTML = `
+        <div class="app-block-left">
+          <div class="app-icon">
+            <img alt="download" src="${logo}">
+          </div>
+          <div class="app-content">
+            <span class="app-title">${name}</span>
+            <span class="app-desc">${desc}</span>
+          </div>
+        </div>
+        <div class="downloadBtn">
+          <span>下载</span>
+        </div>
+      `;
+      document.documentElement.style.fontSize = '37.5px';
+    }
+  };
+
+  handleHidePreview = () => {
+    this.setState({
+      previewModalVisible: false,
+    });
   };
 
   handleShowLabelModal = () => {
@@ -152,7 +177,7 @@ class EditorPage extends React.Component {
   };
 
   render() {
-    const { editorState, title, coverList, topImgList } = this.state;
+    const { editorState, title, coverList, topImgList, previewModalVisible } = this.state;
     const { cancelAddAction } = this.props;
 
     const extendControls = [
@@ -178,7 +203,7 @@ class EditorPage extends React.Component {
       },
     ];
     return (
-      <div className={styles.editorCon}>
+      <div className={classnames(styles.editorCon, 'editorPage')}>
         <div className={styles.editorHeader}>
           <Input
             onChange={this.handleChageTitle}
@@ -189,7 +214,7 @@ class EditorPage extends React.Component {
           <div className={styles.rightBtnCon}>
             <MyButton onClick={cancelAddAction}>取消</MyButton>
             <MyButton onClick={this.handleSaveTemplate}>存为模板</MyButton>
-            <MyButton onClick={this.handlePreview}>预览</MyButton>
+            <MyButton onClick={this.handleShowPreview}>预览</MyButton>
             <MyButton
               onClick={() => {
                 this.footerRef.handleSubmit(this.handleSubmit);
@@ -219,6 +244,15 @@ class EditorPage extends React.Component {
           </div>
           <div className={styles.editBodyRight} />
         </div>
+        <Modal
+          className="previewModal"
+          title="preview"
+          visible={previewModalVisible}
+          onCancel={this.handleHidePreview}
+          footer={null}
+        >
+          <div id="preview" />
+        </Modal>
       </div>
     );
   }
