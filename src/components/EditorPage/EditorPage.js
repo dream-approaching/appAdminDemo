@@ -1,6 +1,6 @@
 // /* eslint-disable */
 import React from 'react';
-import { Input, Button, Modal } from 'antd';
+import { Input, Button, Modal, Col, Popover } from 'antd';
 import BraftEditor from 'braft-editor';
 import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
@@ -35,7 +35,6 @@ class EditorPage extends React.Component {
   state = {
     title: '测试编辑器01',
     previewModalVisible: false,
-    templateModalVisible: false,
     coverList: [],
     topImgList: [],
     templateImgList: [],
@@ -137,7 +136,6 @@ class EditorPage extends React.Component {
   handleHideModal = () => {
     this.setState({
       previewModalVisible: false,
-      templateModalVisible: false,
     });
   };
 
@@ -152,26 +150,6 @@ class EditorPage extends React.Component {
       desc: '只需动动嘴就能记录生活的点点滴滴',
       logo:
         'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-    };
-    this.setState({
-      editorState: ContentUtils.insertHTML(
-        editorState,
-        `<p></p>
-          <div class="app-block-bar"  data-name="${apiData.name}" data-desc="${
-          apiData.desc
-        }" data-logo="${apiData.logo}"></div>
-          <p></p>`
-      ),
-    });
-  };
-
-  handleChooseApp2 = () => {
-    const { editorState } = this.state;
-    const apiData = {
-      name: '有道云笔记',
-      desc: '有道云笔记笔记本笔记本',
-      logo:
-        'https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=3461543860,1107367637&fm=173&app=49&f=JPEG?w=218&h=146&s=86355F864942A49455CCC02203000003',
     };
     this.setState({
       editorState: ContentUtils.insertHTML(
@@ -202,6 +180,42 @@ class EditorPage extends React.Component {
     }
   };
 
+  selectTemplate = item => {
+    const { editorState } = this.state;
+    if (editorState) {
+      Modal.confirm({
+        content: '有内容未保存，即将覆盖编辑器内容，是否继续',
+        onOk: () => {
+          this.setState({
+            editorState: BraftEditor.createEditorState(item.content, {
+              blockImportFn,
+              blockExportFn,
+            }),
+          });
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
+    } else {
+      this.setState({
+        editorState: BraftEditor.createEditorState(item.content, { blockImportFn, blockExportFn }),
+      });
+    }
+  };
+
+  showTemplateAction = item => {
+    this.setState({
+      [`template_${item.id}`]: true,
+    });
+  };
+
+  hideTemplateAction = item => {
+    this.setState({
+      [`template_${item.id}`]: false,
+    });
+  };
+
   render() {
     const {
       editorState,
@@ -210,10 +224,45 @@ class EditorPage extends React.Component {
       topImgList,
       templateImgList,
       previewModalVisible,
-      templateModalVisible,
     } = this.state;
     const { cancelAddAction } = this.props;
-
+    const templateData = [
+      {
+        id: 1,
+        img:
+          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
+        title: '模板1',
+        content: '<span>模板1 123</span>',
+      },
+      {
+        id: 2,
+        img:
+          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
+        title: '模板2',
+        content: '<span>模板2 123</span>',
+      },
+      {
+        id: 3,
+        img:
+          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
+        title: '模板3',
+        content: '<span>模板3 123</span>',
+      },
+      {
+        id: 4,
+        img:
+          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
+        title: '模板4',
+        content: '<span>模板4 123</span>',
+      },
+      {
+        id: 5,
+        img:
+          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
+        title: '模板5',
+        content: '<span>模板5 123</span>',
+      },
+    ];
     const extendControls = [
       {
         key: 'addApp',
@@ -278,7 +327,31 @@ class EditorPage extends React.Component {
               topImgList={topImgList}
             />
           </div>
-          <div className={styles.editBodyRight} />
+          <div className={styles.editBodyRight}>
+            {templateData.map(item => {
+              return (
+                <Col xs={24} sm={24} md={24} lg={24} xl={12} key={item.title}>
+                  <Popover
+                    content={
+                      <div className={styles.btnCon}>
+                        <div onClick={() => this.selectTemplate(item)}>
+                          <span>选用</span>
+                        </div>
+                        <div onClick={() => this.deleteTemplate(item)}>
+                          <span>删除</span>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <div className={classnames(styles.templateItem)}>
+                      <img alt="logo" src={item.img} />
+                      <h4>{item.title}</h4>
+                    </div>
+                  </Popover>
+                </Col>
+              );
+            })}
+          </div>
         </div>
         <Modal
           className="previewModal"
@@ -288,16 +361,6 @@ class EditorPage extends React.Component {
           footer={null}
         >
           <div id="preview" />
-        </Modal>
-        <Modal title="保存模板" visible={templateModalVisible} onCancel={this.handleHideModal}>
-          <MyUpload
-            listType="picture-card"
-            fileList={templateImgList}
-            onChange={this.handleChangeUpload('templateImg')}
-          >
-            {templateImgList.length >= 1 ? null : uploadButton('上传封面图')}
-          </MyUpload>
-          <Input placeholder="请输入模板名称" />
         </Modal>
         <ModalForm
           wrappedComponentRef={form => (this.modalForm = form)}
