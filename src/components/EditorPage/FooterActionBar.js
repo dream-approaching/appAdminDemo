@@ -1,10 +1,11 @@
 // /* eslint-disable */
 import React from 'react';
-import { Input, Icon, Form, Radio, Tag, Button, Col } from 'antd';
+import { Input, Form, Radio, Tag, Button, Col } from 'antd';
 import 'braft-editor/dist/index.css';
 import MyUpload from '@/components/MyUpload';
 import LabelModal from '@/components/LabelModal';
 import styles from './index.less';
+import { uploadButton } from '../MyUpload/uploadBtn';
 
 const RadioGroup = Radio.Group;
 const { TextArea } = Input;
@@ -29,13 +30,6 @@ class FooterActionBar extends React.Component {
   render() {
     const { form, coverList, topImgList } = this.props;
     const { getFieldDecorator } = form;
-
-    const uploadButton = (
-      <div>
-        <Icon type="plus" />
-        <div className="ant-upload-text">Upload</div>
-      </div>
-    );
     const option = [
       { key: 1, value: '专题文章' },
       { key: 2, value: '应用推荐' },
@@ -131,7 +125,7 @@ class FooterActionBar extends React.Component {
                   fileList={coverList}
                   onChange={this.props.handleChangeUpload('cover')}
                 >
-                  {coverList.length >= 1 ? null : uploadButton}
+                  {coverList.length >= 1 ? null : uploadButton()}
                 </MyUpload>
               )}
             </Form.Item>
@@ -155,7 +149,7 @@ class FooterActionBar extends React.Component {
                   fileList={topImgList}
                   onChange={this.props.handleChangeUpload('topImg')}
                 >
-                  {topImgList.length >= 1 ? null : uploadButton}
+                  {topImgList.length >= 1 ? null : uploadButton()}
                 </MyUpload>
               )}
             </Form.Item>

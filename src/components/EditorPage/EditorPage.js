@@ -10,11 +10,13 @@ import { ContentUtils } from 'braft-utils';
 import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { Base64 } from 'js-base64';
 import classnames from 'classnames';
+import ModalForm from '@/components/ModalForm';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
 import { myMessage } from '../MyMessage';
 import EditorFooter from './FooterActionBar';
+import { uploadButton } from '../MyUpload/uploadBtn';
 
 const blockRendererFn = (block, { editor, editorState }) => {
   if (block.getType() === 'block-bar') {
@@ -33,10 +35,36 @@ class EditorPage extends React.Component {
   state = {
     title: '测试编辑器01',
     previewModalVisible: false,
+    templateModalVisible: false,
     coverList: [],
     topImgList: [],
+    templateImgList: [],
     // editorImgList: [],
     editorState: BraftEditor.createEditorState('<h3>123</h3>', { blockImportFn, blockExportFn }),
+  };
+
+  getModalFormItem = () => {
+    return [
+      {
+        type: 'upload',
+        title: '封面',
+        id: 'uploadImg',
+        layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
+        options: {
+          rules: [{ required: true, message: '必选项' }],
+        },
+      },
+      {
+        type: 'input',
+        title: '标题',
+        id: 'title',
+        placeholder: '请输入标题',
+        layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
+        options: {
+          rules: [{ required: true, message: '请输入标题' }],
+        },
+      },
+    ];
   };
 
   handleChageTitle = e => {
@@ -45,9 +73,8 @@ class EditorPage extends React.Component {
     });
   };
 
+  // 在编辑器获得焦点时按下ctrl+s会执行此方法
   handleSubmitContent = async () => {
-    // 在编辑器获得焦点时按下ctrl+s会执行此方法
-    // 编辑器内容提交到服务端之前，可直接调用editorState.toHTML()来获取HTML格式的内容
     const htmlContent = this.state.editorState.toHTML();
     console.log('%chtmlContent:', 'color: #0e93e0;background: #aaefe5;', htmlContent);
   };
@@ -78,9 +105,7 @@ class EditorPage extends React.Component {
     console.log('Base64.encode(editorState.toHTML())', Base64.encode(editorState.toHTML()));
   };
 
-  handleSaveTemplate = () => {
-    console.log(123);
-  };
+  submitAction = () => {};
 
   handleShowPreview = async () => {
     await this.setState({
@@ -109,9 +134,10 @@ class EditorPage extends React.Component {
     }
   };
 
-  handleHidePreview = () => {
+  handleHideModal = () => {
     this.setState({
       previewModalVisible: false,
+      templateModalVisible: false,
     });
   };
 
@@ -177,7 +203,15 @@ class EditorPage extends React.Component {
   };
 
   render() {
-    const { editorState, title, coverList, topImgList, previewModalVisible } = this.state;
+    const {
+      editorState,
+      title,
+      coverList,
+      topImgList,
+      templateImgList,
+      previewModalVisible,
+      templateModalVisible,
+    } = this.state;
     const { cancelAddAction } = this.props;
 
     const extendControls = [
@@ -213,7 +247,9 @@ class EditorPage extends React.Component {
           />
           <div className={styles.rightBtnCon}>
             <MyButton onClick={cancelAddAction}>取消</MyButton>
-            <MyButton onClick={this.handleSaveTemplate}>存为模板</MyButton>
+            <MyButton onClick={() => this.modalForm.showModal('template', '保存模板')}>
+              存为模板
+            </MyButton>
             <MyButton onClick={this.handleShowPreview}>预览</MyButton>
             <MyButton
               onClick={() => {
@@ -248,11 +284,37 @@ class EditorPage extends React.Component {
           className="previewModal"
           title="preview"
           visible={previewModalVisible}
-          onCancel={this.handleHidePreview}
+          onCancel={this.handleHideModal}
           footer={null}
         >
           <div id="preview" />
         </Modal>
+        <Modal title="保存模板" visible={templateModalVisible} onCancel={this.handleHideModal}>
+          <MyUpload
+            listType="picture-card"
+            fileList={templateImgList}
+            onChange={this.handleChangeUpload('templateImg')}
+          >
+            {templateImgList.length >= 1 ? null : uploadButton('上传封面图')}
+          </MyUpload>
+          <Input placeholder="请输入模板名称" />
+        </Modal>
+        <ModalForm
+          wrappedComponentRef={form => (this.modalForm = form)}
+          ref={ref => (this.modalFormWithForm = ref)}
+          formItem={this.getModalFormItem()}
+          loading={false}
+          submitAction={this.submitAction}
+          upload={
+            <MyUpload
+              listType="picture-card"
+              fileList={templateImgList}
+              onChange={this.handleChangeUpload('templateImg')}
+            >
+              {templateImgList.length >= 1 ? null : uploadButton('上传封面图')}
+            </MyUpload>
+          }
+        />
       </div>
     );
   }

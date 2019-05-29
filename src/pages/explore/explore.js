@@ -5,7 +5,7 @@ import { connect } from 'dva';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { exploreType, publishStatus } from '@/constants/constants';
 import MyButton from '@/components/Button';
-import EditorPageForm from '@/components/EditorPage';
+import EditorPageForm from '@/components/EditorPage/EditorPage';
 import columns from './columns';
 import styles from './index.less';
 

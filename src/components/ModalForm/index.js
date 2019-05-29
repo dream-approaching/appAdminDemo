@@ -16,7 +16,6 @@ import classNames from 'classnames';
 import { ChromePicker } from 'react-color';
 import RenderItemContainer from '@/components/Defrag/RenderItemContainer';
 import { throttle } from '@/utils/utils';
-import MyUpload from './MyUpload';
 import styles from './index.less';
 
 const { Option } = Select;
@@ -106,7 +105,7 @@ class MyModal extends React.Component {
     const { getFieldDecorator } = this.props.form;
     const { dataOption = {} } = item;
     const { option = [], key, value, showValue } = dataOption;
-    const layout = { labelCol: { span: 5 }, wrapperCol: { span: 19 } };
+    const layout = { labelCol: { span: 5 }, wrapperCol: { span: 19 }, ...item.layout };
     switch (item.type) {
       case 'input':
       case 'textArea':
@@ -210,7 +209,7 @@ class MyModal extends React.Component {
       case 'upload':
         return (
           <RenderItemContainer
-            extra={item.extra || '图片要求jpg,png格式,不超过2M'}
+            extra={item.extra}
             title={item.title}
             className="upload"
             key={item.title}
@@ -218,7 +217,7 @@ class MyModal extends React.Component {
           >
             {getFieldDecorator(item.id || `id_${index}`, {
               ...item.options,
-            })(<MyUpload {...item.props} />)}
+            })(this.props.upload)}
           </RenderItemContainer>
         );
       case 'radio':
