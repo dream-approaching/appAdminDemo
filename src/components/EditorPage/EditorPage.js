@@ -1,6 +1,7 @@
 // /* eslint-disable */
 import React from 'react';
-import { Input, Button, Modal, Col, Popover } from 'antd';
+import { Input, Button, Modal, Col } from 'antd';
+import ReactHoverObserver from 'react-hover-observer';
 import BraftEditor from 'braft-editor';
 import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
@@ -204,6 +205,17 @@ class EditorPage extends React.Component {
     }
   };
 
+  deleteTemplate = item => {
+    Modal.confirm({
+      content: `确认要删除模板:${item.title}吗？`,
+      okType: 'danger',
+      onOk: () => {},
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
   showTemplateAction = item => {
     this.setState({
       [`template_${item.id}`]: true,
@@ -331,23 +343,26 @@ class EditorPage extends React.Component {
             {templateData.map(item => {
               return (
                 <Col xs={24} sm={24} md={24} lg={24} xl={12} key={item.title}>
-                  <Popover
-                    content={
-                      <div className={styles.btnCon}>
-                        <div onClick={() => this.selectTemplate(item)}>
-                          <span>选用</span>
+                  <ReactHoverObserver>
+                    {({ isHovering }) => {
+                      return (
+                        <div className={classnames(styles.templateItem)}>
+                          <img alt="logo" src={item.img} />
+                          <h4>{item.title}</h4>
+                          {isHovering && (
+                            <div className={styles.btnCon}>
+                              <Button onClick={() => this.selectTemplate(item)}>
+                                <span>选用</span>
+                              </Button>
+                              <Button type="danger" onClick={() => this.deleteTemplate(item)}>
+                                <span>删除</span>
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                        <div onClick={() => this.deleteTemplate(item)}>
-                          <span>删除</span>
-                        </div>
-                      </div>
-                    }
-                  >
-                    <div className={classnames(styles.templateItem)}>
-                      <img alt="logo" src={item.img} />
-                      <h4>{item.title}</h4>
-                    </div>
-                  </Popover>
+                      );
+                    }}
+                  </ReactHoverObserver>
                 </Col>
               );
             })}
