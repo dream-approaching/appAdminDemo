@@ -39,32 +39,9 @@ class EditorPage extends React.Component {
     coverList: [],
     topImgList: [],
     templateImgList: [],
+    formItem: [],
     // editorImgList: [],
     editorState: BraftEditor.createEditorState('<h3>123</h3>', { blockImportFn, blockExportFn }),
-  };
-
-  getModalFormItem = () => {
-    return [
-      {
-        type: 'upload',
-        title: '封面',
-        id: 'uploadImg',
-        layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
-        options: {
-          rules: [{ required: true, message: '必选项' }],
-        },
-      },
-      {
-        type: 'input',
-        title: '标题',
-        id: 'title',
-        placeholder: '请输入标题',
-        layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
-        options: {
-          rules: [{ required: true, message: '请输入标题' }],
-        },
-      },
-    ];
   };
 
   handleChageTitle = e => {
@@ -105,14 +82,16 @@ class EditorPage extends React.Component {
     console.log('Base64.encode(editorState.toHTML())', Base64.encode(editorState.toHTML()));
   };
 
-  submitAction = () => {};
-
   handleShowPreview = async () => {
+    const { title } = this.state;
     await this.setState({
       previewModalVisible: true,
     });
     const previewDom = document.getElementById('preview');
-    previewDom.innerHTML = preview(this.state.editorState.toHTML());
+    previewDom.innerHTML = preview({
+      title,
+      body: this.state.editorState.toHTML(),
+    });
     const appArr = previewDom.getElementsByClassName('app-block-bar');
     for (let i = 0, len = appArr.length; i < len; i++) {
       const { name, desc, logo } = appArr[i].dataset;
@@ -166,7 +145,6 @@ class EditorPage extends React.Component {
 
   handleChangeUpload = imgType => ({ file, fileList }) => {
     const { editorState } = this.state;
-    console.log('%cfile:', 'color: #0e93e0;background: #aaefe5;', file);
     this.setState({ [`${imgType}List`]: fileList });
 
     if (imgType === 'editorImg' && file.status === 'done') {
@@ -216,16 +194,69 @@ class EditorPage extends React.Component {
     });
   };
 
-  showTemplateAction = item => {
-    this.setState({
-      [`template_${item.id}`]: true,
+  // 显示modal
+  showModal = (type, modalTitle) => async item => {
+    console.log('%citem:', 'color: #0e93e0;background: #aaefe5;', item);
+    let formItem;
+    switch (type) {
+      case 'template':
+        formItem = [
+          {
+            type: 'upload',
+            title: '封面',
+            id: 'uploadImg',
+            layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
+            options: {
+              rules: [{ required: true, message: '必选项' }],
+            },
+          },
+          {
+            type: 'input',
+            title: '标题',
+            id: 'templateTitle',
+            placeholder: '请输入标题',
+            layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
+            options: {
+              rules: [{ required: true, message: '请输入标题' }],
+            },
+          },
+        ];
+        break;
+      default:
+        console.log(123);
+    }
+    await this.setState({
+      formItem,
+      // currentModal: type,
     });
+    // switch (type) {
+    //   case 'template':
+    //     this.modalFormWithForm.setFieldsValue({
+    //       symbol: item.symbol,
+    //     });
+    //     break;
+    //   default:
+    //     break;
+    // }
+    this.modalForm.showModal(type, modalTitle);
   };
 
-  hideTemplateAction = item => {
-    this.setState({
-      [`template_${item.id}`]: false,
-    });
+  /**
+   * 提交表单
+   * @param {Object} data 表单数据
+   * @param {String} modalType modal的id
+   */
+  submitAction = (data, modalType) => {
+    switch (modalType) {
+      case 'template': {
+        console.log('submitAction modalType is template');
+
+        this.modalForm.hideModal();
+        break;
+      }
+      default:
+        return null;
+    }
   };
 
   render() {
@@ -236,6 +267,7 @@ class EditorPage extends React.Component {
       topImgList,
       templateImgList,
       previewModalVisible,
+      formItem,
     } = this.state;
     const { cancelAddAction } = this.props;
     const templateData = [
@@ -308,9 +340,7 @@ class EditorPage extends React.Component {
           />
           <div className={styles.rightBtnCon}>
             <MyButton onClick={cancelAddAction}>取消</MyButton>
-            <MyButton onClick={() => this.modalForm.showModal('template', '保存模板')}>
-              存为模板
-            </MyButton>
+            <MyButton onClick={this.showModal('template', '保存模板')}>存为模板</MyButton>
             <MyButton onClick={this.handleShowPreview}>预览</MyButton>
             <MyButton
               onClick={() => {
@@ -380,7 +410,7 @@ class EditorPage extends React.Component {
         <ModalForm
           wrappedComponentRef={form => (this.modalForm = form)}
           ref={ref => (this.modalFormWithForm = ref)}
-          formItem={this.getModalFormItem()}
+          formItem={formItem}
           loading={false}
           submitAction={this.submitAction}
           upload={

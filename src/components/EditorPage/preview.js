@@ -1,4 +1,5 @@
-export const preview = body => {
+export const preview = ({ title, coverImg, lebals, body }) => {
+  console.log('%ccoverImg, lebals:', 'color: #0e93e0;background: #aaefe5;', coverImg, lebals);
   return `
     <!DOCTYPE html>
 <html>
@@ -145,6 +146,7 @@ export const preview = body => {
     </style>
   </head>
   <body>
+    <h2>${title}</h2>
     ${body}
     <script>
       window.onload = () => {

@@ -115,7 +115,12 @@ class MyModal extends React.Component {
               ...item.options,
             })(
               item.type === 'input' ? (
-                <Input placeholder={item.placeholder} {...item.props} {...item.methods} />
+                <Input
+                  placeholder={item.placeholder}
+                  onPressEnter={this.submitModal}
+                  {...item.props}
+                  {...item.methods}
+                />
               ) : (
                 <Input.TextArea
                   placeholder={item.placeholder}
