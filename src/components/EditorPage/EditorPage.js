@@ -12,6 +12,7 @@ import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { Base64 } from 'js-base64';
 import classnames from 'classnames';
 import ModalForm from '@/components/ModalForm';
+import ModalAppSearch from '@/components/ModalAppSearch/index';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
 import { preview } from './preview';
 import styles from './index.less';
@@ -194,6 +195,10 @@ class EditorPage extends React.Component {
     });
   };
 
+  handleShowAppModal = () => {
+    this.searchAppModal.wrappedInstance.showModal();
+  };
+
   // 显示modal
   showModal = (type, modalTitle) => async item => {
     console.log('%citem:', 'color: #0e93e0;background: #aaefe5;', item);
@@ -312,7 +317,7 @@ class EditorPage extends React.Component {
         key: 'addApp',
         type: 'component',
         component: (
-          <Button type="button" onClick={this.handleChooseApp} className="control-item button">
+          <Button type="button" onClick={this.handleShowAppModal} className="control-item button">
             选择App
           </Button>
         ),
@@ -407,6 +412,7 @@ class EditorPage extends React.Component {
         >
           <div id="preview" />
         </Modal>
+        <ModalAppSearch ref={ref => (this.searchAppModal = ref)} />
         <ModalForm
           wrappedComponentRef={form => (this.modalForm = form)}
           ref={ref => (this.modalFormWithForm = ref)}

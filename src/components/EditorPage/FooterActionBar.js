@@ -3,7 +3,7 @@ import React from 'react';
 import { Input, Form, Radio, Tag, Button, Col } from 'antd';
 import 'braft-editor/dist/index.css';
 import MyUpload from '@/components/MyUpload';
-import LabelModal from '@/components/LabelModal';
+import ModalLabel from '@/components/ModalLabel';
 import styles from './index.less';
 import { uploadButton } from '../MyUpload/uploadBtn';
 
@@ -155,7 +155,7 @@ class FooterActionBar extends React.Component {
             </Form.Item>
           </Col>
         </Form>
-        <LabelModal ref={ref => (this.labelModalRef = ref)} />
+        <ModalLabel ref={ref => (this.labelModalRef = ref)} />
       </div>
     );
   }

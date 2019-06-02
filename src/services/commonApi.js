@@ -13,3 +13,11 @@ export async function articleActionReq(params) {
     body: params,
   });
 }
+
+// 查询标签
+export async function queryLabelReq(params) {
+  return request(`${baseUrl}/interface/v1/js/content/commit_recommend_content`, {
+    method: 'POST',
+    body: params,
+  });
+}

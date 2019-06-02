@@ -263,3 +263,7 @@ export function debounce2(func, wait = 300, immediate = true) {
     }
   };
 }
+
+export function mergeProps(stateProps, dispatchProps, ownProps) {
+  return Object.assign({}, ownProps, stateProps, dispatchProps);
+}
