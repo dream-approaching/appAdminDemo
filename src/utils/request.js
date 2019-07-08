@@ -103,7 +103,7 @@ export default function request(url, option) {
   const globalParams = {
     access_token: loginInfo ? loginInfo.access_token : '',
     username: loginInfo ? loginInfo.username : '',
-    channel_id: '1',
+    channel_id: '2',
   };
   if (newOptions.method === 'GET') {
     const data = { ...globalParams, ...newOptions.data };

@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 import { baseUrl } from '../defaultSettings';
 
-// modal搜索app
+// 搜索app列表
 export async function queryModalAppSearchReq(params) {
-  return request(`${baseUrl}/interface/v1/js/content/get_recommend_list`, { data: params });
+  return request(`${baseUrl}/interface/v1/js/app/get_app_list`, { data: params });
 }

@@ -1,24 +1,21 @@
-import { articleActionReq, queryLabelReq } from '@/services/commonApi';
+import { articleActionReq, queryExploreDetailReq } from '@/services/commonApi';
 import { myMessage } from '@/components/MyMessage';
 
 export default {
   namespace: 'article',
 
   state: {
-    labelData: [],
+    articleDetail: null,
   },
 
   effects: {
-    *queryLabelEffect({ payload, successFn }, { call, put }) {
+    *addArticleEffect({ payload, successFn }, { call }) {
       console.log('%cpayload:', 'color: #0e93e0;background: #aaefe5;', payload);
       try {
-        const response = yield call(queryLabelReq, payload);
+        const response = yield call(articleActionReq, payload);
         console.log('%cresponse:', 'color: #0e93e0;background: #aaefe5;', response);
-        if (response && response.code === 0 && successFn) {
-          yield put({
-            type: 'saveLabelData',
-            payload: response.data || {},
-          });
+        if (response && response.code === 0) {
+          successFn && successFn();
         } else {
           myMessage.warning(response.msg);
         }
@@ -26,13 +23,17 @@ export default {
         console.log('err', err);
       }
     },
-    *addArticleEffect({ payload, successFn }, { call }) {
+    *queryArticleDetailEffect({ payload, successFn }, { call, put }) {
       console.log('%cpayload:', 'color: #0e93e0;background: #aaefe5;', payload);
       try {
-        const response = yield call(articleActionReq, payload);
+        const response = yield call(queryExploreDetailReq, payload);
         console.log('%cresponse:', 'color: #0e93e0;background: #aaefe5;', response);
-        if (response && response.code === 0 && successFn) {
-          successFn();
+        if (response && response.code === 0) {
+          yield put({
+            type: 'saveArticleDetail',
+            payload: response.data,
+          });
+          successFn && successFn();
         } else {
           myMessage.warning(response.msg);
         }
@@ -43,10 +44,10 @@ export default {
   },
 
   reducers: {
-    saveLabelData(state, { payload }) {
+    saveArticleDetail(state, { payload }) {
       return {
         ...state,
-        labelData: payload,
+        articleDetail: payload,
       };
     },
   },

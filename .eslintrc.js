@@ -42,6 +42,8 @@ module.exports = {
     'no-plusplus': 0,
     'no-param-reassign': 0,
     'no-useless-escape': 0,
+    'array-callback-return': 0,
+    'no-unused-expressions': 0,
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url', 'object-assign'],

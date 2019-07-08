@@ -1,6 +1,6 @@
 // 发布状态
 export const publishStatus = {
-  failed: {
+  pending: {
     key: 1,
     name: '未发布',
   },

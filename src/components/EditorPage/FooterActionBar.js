@@ -12,7 +12,20 @@ const { TextArea } = Input;
 
 class FooterActionBar extends React.Component {
   handleShowLabelModal = () => {
-    this.labelModalRef.wrappedInstance.showModal();
+    const { form } = this.props;
+    this.labelModalRef.wrappedInstance.showModal({
+      type: form.getFieldValue('articleType'),
+    });
+  };
+
+  confirmLabelAction = labels => {
+    console.log('%clabels:', 'color: #0e93e0;background: #aaefe5;', labels);
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'label/saveSelectedLabel',
+      payload: labels,
+    });
+    this.labelModalRef.wrappedInstance.hideModal();
   };
 
   handleSubmit = fn => {
@@ -22,18 +35,24 @@ class FooterActionBar extends React.Component {
     form.validateFields(['articleType', 'desc'], (err, values) => {
       if (!err) {
         console.log('Received values of form: ', values);
-        fn();
+        fn(values);
       }
     });
   };
 
+  changeColorType = e => {
+    const { handleChangeColorType } = this.props;
+    handleChangeColorType(e.target.value);
+  };
+
   render() {
-    const { form, coverList, topImgList } = this.props;
+    const { form, coverList, topImgList, label } = this.props;
+    const { selectedLabel } = label;
     const { getFieldDecorator } = form;
     const option = [
-      { key: 1, value: '专题文章' },
-      { key: 2, value: '应用推荐' },
-      { key: 3, value: '互动话题' },
+      { key: 2, value: '专题文章' },
+      { key: 3, value: '应用推荐' },
+      { key: 1, value: '互动话题' },
     ];
     return (
       <div className={styles.footerCon}>
@@ -47,12 +66,12 @@ class FooterActionBar extends React.Component {
                     message: '请选择文章类型',
                   },
                 ],
-                initialValue: '应用推荐',
+                initialValue: 2,
               })(
                 <RadioGroup>
                   {option.map(optionItem => {
                     return (
-                      <Radio key={optionItem.key} value={optionItem.value}>
+                      <Radio key={optionItem.key} value={optionItem.key}>
                         {optionItem.value}
                       </Radio>
                     );
@@ -68,15 +87,13 @@ class FooterActionBar extends React.Component {
               })(
                 <div>
                   <span>
-                    <Tag closable color="magenta">
-                      工具
-                    </Tag>
-                    <Tag closable color="magenta">
-                      社交
-                    </Tag>
-                    <Tag closable color="magenta">
-                      阅读
-                    </Tag>
+                    {selectedLabel.map(item => {
+                      return (
+                        <Tag key={item.id} closable color="magenta">
+                          {item.label}
+                        </Tag>
+                      );
+                    })}
                   </span>
                   <Button onClick={this.handleShowLabelModal} size="small">
                     选择
@@ -87,14 +104,7 @@ class FooterActionBar extends React.Component {
           </Col>
           <Col xs={24} sm={24} md={24} lg={24} xl={16}>
             <Form.Item label="关联App标签" key="关联App标签">
-              {getFieldDecorator('relation', {
-                rules: [
-                  {
-                    required: true,
-                    message: '必填',
-                  },
-                ],
-              })(<Input placeholder="石墨文档" />)}
+              {getFieldDecorator('relationApp', {})(<Input disabled />)}
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={24} lg={24} xl={8}>
@@ -129,9 +139,13 @@ class FooterActionBar extends React.Component {
                 </MyUpload>
               )}
             </Form.Item>
-            <RadioGroup defaultValue="黑色底" className={styles.coverBtn}>
-              <Radio value="黑色底">黑色底</Radio>
-              <Radio value="白色底">白色底</Radio>
+            <RadioGroup
+              onChange={this.changeColorType}
+              defaultValue="1"
+              className={styles.coverBtn}
+            >
+              <Radio value="1">黑色底</Radio>
+              <Radio value="2">白色底</Radio>
             </RadioGroup>
           </Col>
           <Col xs={24} sm={24} md={24} lg={12} xl={8}>
@@ -155,7 +169,10 @@ class FooterActionBar extends React.Component {
             </Form.Item>
           </Col>
         </Form>
-        <ModalLabel ref={ref => (this.labelModalRef = ref)} />
+        <ModalLabel
+          confirmAction={this.confirmLabelAction}
+          ref={ref => (this.labelModalRef = ref)}
+        />
       </div>
     );
   }

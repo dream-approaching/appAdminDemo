@@ -80,7 +80,7 @@ class MyUpload extends React.Component {
         data={{
           access_token: loginInfo ? loginInfo.access_token : '',
           username: loginInfo ? loginInfo.username : '',
-          channel_id: '1',
+          channel_id: '2',
           sig: 'true',
           image_size: imgSize,
           image_type: imgType,

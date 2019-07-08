@@ -1,25 +1,23 @@
 // /* eslint-disable */
 import React from 'react';
-import { Input, Button, Modal, Col } from 'antd';
-import ReactHoverObserver from 'react-hover-observer';
+import { Button, Select } from 'antd';
 import BraftEditor from 'braft-editor';
-import MyButton from '@/components/Button';
 import 'braft-editor/dist/index.css';
 import MyUpload from '@/components/MyUpload';
 import { connect } from 'dva';
-import { ContentUtils } from 'braft-utils';
-import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
 import { Base64 } from 'js-base64';
 import classnames from 'classnames';
-import ModalForm from '@/components/ModalForm';
-import ModalAppSearch from '@/components/ModalAppSearch/index';
+import shortid from 'shortid';
+import { DndProvider } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+import Example from './example';
+import BarBlockComponent from '@/components/EditorPage/BarBlockComponent';
+import { publishStatus } from '@/config/constants';
 import { unitImportFn, unitExportFn, blockExportFn, blockImportFn } from './convert';
-import { preview } from './preview';
 import styles from './index.less';
-import { myMessage } from '../MyMessage';
-import EditorFooter from './FooterActionBar';
 import { uploadButton } from '../MyUpload/uploadBtn';
 
+const { Option } = Select;
 const blockRendererFn = (block, { editor, editorState }) => {
   if (block.getType() === 'block-bar') {
     return {
@@ -29,27 +27,69 @@ const blockRendererFn = (block, { editor, editorState }) => {
     };
   }
 };
-@connect(({ explore, loading }) => ({
+@connect(({ explore, label, loading, article }) => ({
   explore,
+  label,
+  article,
   loading: loading.effects['explore/queryExploreListEffect'],
 }))
 class EditorPage extends React.Component {
-  state = {
-    title: '测试编辑器01',
-    previewModalVisible: false,
-    coverList: [],
-    topImgList: [],
-    templateImgList: [],
-    formItem: [],
-    // editorImgList: [],
-    editorState: BraftEditor.createEditorState('<h3>123</h3>', { blockImportFn, blockExportFn }),
-  };
+  constructor(props) {
+    super(props);
+    if (props.editorType === 'edit') {
+      console.log(props.article.articleDetail);
+      const { articleDetail } = props.article;
+      this.state = {
+        selectedApp: [],
+        colorType: '',
+        title: articleDetail.title,
+        coverList: [],
+        imgList: [],
+        // editorImgList: [],
+        editorState: BraftEditor.createEditorState('<h3>123</h3>', {
+          blockImportFn,
+          blockExportFn,
+        }),
+      };
+    } else {
+      this.state = {
+        selectedApp: [],
+        colorType: '1',
+        title: '测试编辑器01',
+        coverList: [],
+        addressValue: '',
+        imgList: [],
+        // editorImgList: [],
+        editorState: null,
+        uploadedImg: [
+          {
+            id: '1',
+            name: 1,
+            url: 'http://192.168.0.200:1230/uploads_cms_images/1562576690067_64242.png',
+          },
+          {
+            id: '2',
+            name: 2,
+            url: 'http://192.168.0.200:1230/uploads_cms_images/1562576880366_48239.png',
+          },
+          {
+            id: '3',
+            name: 3,
+            url: 'http://192.168.0.200:1230/uploads_cms_images/1562576880366_48239.png',
+          },
+        ],
+        sorting: false,
+      };
+    }
+  }
 
-  handleChageTitle = e => {
-    this.setState({
-      title: e.target.value,
-    });
-  };
+  componentDidMount() {
+    console.log('editor componentDidMount');
+  }
+
+  componentWillUnmount() {
+    console.log('editor componentWillUnmount');
+  }
 
   // 在编辑器获得焦点时按下ctrl+s会执行此方法
   handleSubmitContent = async () => {
@@ -61,189 +101,47 @@ class EditorPage extends React.Component {
     this.setState({ editorState });
   };
 
-  handleSubmit = () => {
-    const { dispatch, addSuccessFn } = this.props;
-    const { coverList, topImgList, title, editorState } = this.state;
-    if (!title.length) return myMessage.warning('请输入文章标题');
+  handleSubmit = values => {
+    const { dispatch, addSuccessFn, label, editorType } = this.props;
+    const { coverList, imgList, title, editorState, selectedApp, colorType } = this.state;
+    const data = {
+      oper: editorType,
+      type: values.articleType,
+      img: coverList[0].response.data.imgurl,
+      title,
+      color_type: colorType,
+      related_app: selectedApp.map(item => item.id).join(','),
+      content: Base64.encode(editorState.toHTML()),
+      topimg: imgList[0].response.data.imgurl,
+      label: label.selectedLabel.map(item => item.label).join(','),
+      status: publishStatus.pending.key,
+    };
+    console.log('%cdata:', 'color: #0e93e0;background: #aaefe5;', data);
+    if (editorType === 'edit') {
+      const { articleDetail } = this.props.article;
+      data.id = articleDetail.id;
+    }
     dispatch({
       type: 'article/addArticleEffect',
-      payload: {
-        oper: 'add',
-        // id: '',
-        type: 2,
-        img: coverList[0].response.data.imgurl,
-        title,
-        content: Base64.encode(editorState.toHTML()),
-        topimg: topImgList[0].response.data.imgurl,
-        label: '工具',
-        status: 1,
-      },
+      payload: data,
       successFn: addSuccessFn,
     });
     console.log('Base64.encode(editorState.toHTML())', Base64.encode(editorState.toHTML()));
   };
 
-  handleShowPreview = async () => {
-    const { title } = this.state;
-    await this.setState({
-      previewModalVisible: true,
-    });
-    const previewDom = document.getElementById('preview');
-    previewDom.innerHTML = preview({
-      title,
-      body: this.state.editorState.toHTML(),
-    });
-    const appArr = previewDom.getElementsByClassName('app-block-bar');
-    for (let i = 0, len = appArr.length; i < len; i++) {
-      const { name, desc, logo } = appArr[i].dataset;
-      appArr[i].innerHTML = `
-        <div class="app-block-left">
-          <div class="app-icon">
-            <img alt="download" src="${logo}">
-          </div>
-          <div class="app-content">
-            <span class="app-title">${name}</span>
-            <span class="app-desc">${desc}</span>
-          </div>
-        </div>
-        <div class="downloadBtn">
-          <span>下载</span>
-        </div>
-      `;
-      document.documentElement.style.fontSize = '37.5px';
-    }
-  };
-
-  handleHideModal = () => {
-    this.setState({
-      previewModalVisible: false,
-    });
-  };
-
-  handleShowLabelModal = () => {
-    this.labelModalRef.wrappedInstance.showModal();
-  };
-
-  handleChooseApp = () => {
-    const { editorState } = this.state;
-    const apiData = {
-      name: '讯飞语记',
-      desc: '只需动动嘴就能记录生活的点点滴滴',
-      logo:
-        'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-    };
-    this.setState({
-      editorState: ContentUtils.insertHTML(
-        editorState,
-        `<p></p>
-          <div class="app-block-bar"  data-name="${apiData.name}" data-desc="${
-          apiData.desc
-        }" data-logo="${apiData.logo}"></div>
-          <p></p>`
-      ),
-    });
-  };
-
   handleChangeUpload = imgType => ({ file, fileList }) => {
-    const { editorState } = this.state;
+    const { uploadedImg } = this.state;
     this.setState({ [`${imgType}List`]: fileList });
 
-    if (imgType === 'editorImg' && file.status === 'done') {
+    if (file.status === 'done') {
+      console.log('%cfile:', 'color: #0e93e0;background: #aaefe5;', file);
       this.setState({
-        editorState: ContentUtils.insertMedias(editorState, [
-          {
-            type: 'IMAGE',
-            url: file.response.data.imgurl,
-          },
-        ]),
+        uploadedImg: [
+          ...uploadedImg,
+          { id: shortid.generate(), url: file.response.data.imgurl, name: file.name },
+        ],
       });
     }
-  };
-
-  selectTemplate = item => {
-    const { editorState } = this.state;
-    if (editorState) {
-      Modal.confirm({
-        content: '有内容未保存，即将覆盖编辑器内容，是否继续',
-        onOk: () => {
-          this.setState({
-            editorState: BraftEditor.createEditorState(item.content, {
-              blockImportFn,
-              blockExportFn,
-            }),
-          });
-        },
-        onCancel() {
-          console.log('Cancel');
-        },
-      });
-    } else {
-      this.setState({
-        editorState: BraftEditor.createEditorState(item.content, { blockImportFn, blockExportFn }),
-      });
-    }
-  };
-
-  deleteTemplate = item => {
-    Modal.confirm({
-      content: `确认要删除模板:${item.title}吗？`,
-      okType: 'danger',
-      onOk: () => {},
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  };
-
-  handleShowAppModal = () => {
-    this.searchAppModal.wrappedInstance.showModal();
-  };
-
-  // 显示modal
-  showModal = (type, modalTitle) => async item => {
-    console.log('%citem:', 'color: #0e93e0;background: #aaefe5;', item);
-    let formItem;
-    switch (type) {
-      case 'template':
-        formItem = [
-          {
-            type: 'upload',
-            title: '封面',
-            id: 'uploadImg',
-            layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
-            options: {
-              rules: [{ required: true, message: '必选项' }],
-            },
-          },
-          {
-            type: 'input',
-            title: '标题',
-            id: 'templateTitle',
-            placeholder: '请输入标题',
-            layout: { labelCol: { span: 3 }, wrapperCol: { span: 21 } },
-            options: {
-              rules: [{ required: true, message: '请输入标题' }],
-            },
-          },
-        ];
-        break;
-      default:
-        console.log(123);
-    }
-    await this.setState({
-      formItem,
-      // currentModal: type,
-    });
-    // switch (type) {
-    //   case 'template':
-    //     this.modalFormWithForm.setFieldsValue({
-    //       symbol: item.symbol,
-    //     });
-    //     break;
-    //   default:
-    //     break;
-    // }
-    this.modalForm.showModal(type, modalTitle);
   };
 
   /**
@@ -264,98 +162,63 @@ class EditorPage extends React.Component {
     }
   };
 
+  onSelect = value => {
+    console.log('%cvalue:', 'color: #0e93e0;background: #aaefe5;', value);
+  };
+
+  handleSearchAddress = value => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'explore/queryDefaultAddressListEffect',
+      payload: { keywords: value },
+    });
+  };
+
+  handleChangeAddress = value => {
+    this.setState({ addressValue: value });
+  };
+
+  handleStartSort = () => {
+    this.setState({
+      sorting: true,
+    });
+  };
+
+  handleCompleteSort = () => {
+    this.setState({
+      sorting: false,
+      uploadedImg: this.sortable.state.cards,
+    });
+  };
+
   render() {
-    const {
-      editorState,
-      title,
-      coverList,
-      topImgList,
-      templateImgList,
-      previewModalVisible,
-      formItem,
-    } = this.state;
-    const { cancelAddAction } = this.props;
-    const templateData = [
-      {
-        id: 1,
-        img:
-          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-        title: '模板1',
-        content: '<span>模板1 123</span>',
-      },
-      {
-        id: 2,
-        img:
-          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-        title: '模板2',
-        content: '<span>模板2 123</span>',
-      },
-      {
-        id: 3,
-        img:
-          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-        title: '模板3',
-        content: '<span>模板3 123</span>',
-      },
-      {
-        id: 4,
-        img:
-          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-        title: '模板4',
-        content: '<span>模板4 123</span>',
-      },
-      {
-        id: 5,
-        img:
-          'https://ss0.baidu.com/73F1bjeh1BF3odCf/it/u=199629057,1253565291&fm=85&s=A7D18B7CC88377645AB29F930300408D',
-        title: '模板5',
-        content: '<span>模板5 123</span>',
-      },
-    ];
+    const { editorState, imgList, addressValue, uploadedImg, sorting } = this.state;
+    console.log('%cuploadedImg:', 'color: #0e93e0;background: #aaefe5;', uploadedImg);
+    const { cancelAddAction, explore } = this.props;
+    const { currentAddress, defaultAddressList } = explore;
+    const btnProps = { type: 'primary', className: 'control-item button' };
     const extendControls = [
       {
-        key: 'addApp',
+        key: 'cancel',
         type: 'component',
         component: (
-          <Button type="button" onClick={this.handleShowAppModal} className="control-item button">
-            选择App
+          <Button {...btnProps} onClick={cancelAddAction} data-title="取消">
+            取消
           </Button>
         ),
       },
       {
-        key: 'antd-uploader',
+        key: 'save',
         type: 'component',
         component: (
-          <MyUpload onChange={this.handleChangeUpload('editorImg')} showUploadList={false}>
-            <Button className="control-item button upload-button" data-title="插入图片">
-              插入图片
-            </Button>
-          </MyUpload>
+          <Button {...btnProps} onClick={this.handleSubmit} data-title="保存">
+            保存
+          </Button>
         ),
       },
     ];
     return (
       <div className={classnames(styles.editorCon, 'editorPage')}>
-        <div className={styles.editorHeader}>
-          <Input
-            onChange={this.handleChageTitle}
-            value={title}
-            placeholder="请输入标题"
-            className={styles.headerInput}
-          />
-          <div className={styles.rightBtnCon}>
-            <MyButton onClick={cancelAddAction}>取消</MyButton>
-            <MyButton onClick={this.showModal('template', '保存模板')}>存为模板</MyButton>
-            <MyButton onClick={this.handleShowPreview}>预览</MyButton>
-            <MyButton
-              onClick={() => {
-                this.footerRef.handleSubmit(this.handleSubmit);
-              }}
-            >
-              保存
-            </MyButton>
-          </div>
-        </div>
         <div className={styles.editBody}>
           <div className={styles.editBodyLeft}>
             <BraftEditor
@@ -364,71 +227,69 @@ class EditorPage extends React.Component {
               blockRendererFn={blockRendererFn}
               onChange={this.handleEditorChange}
               onSave={this.handleSubmitContent}
-              extendControls={extendControls}
               ref={instance => (this.editorInstance = instance)}
-            />
-            <EditorFooter
-              wrappedComponentRef={ref => (this.footerRef = ref)}
-              handleChangeUpload={this.handleChangeUpload}
-              coverList={coverList}
-              topImgList={topImgList}
+              excludeControls={['emoji', 'media']}
+              extendControls={extendControls}
+              className={styles.braftEditor}
             />
           </div>
           <div className={styles.editBodyRight}>
-            {templateData.map(item => {
-              return (
-                <Col xs={24} sm={24} md={24} lg={24} xl={12} key={item.title}>
-                  <ReactHoverObserver>
-                    {({ isHovering }) => {
-                      return (
-                        <div className={classnames(styles.templateItem)}>
-                          <img alt="logo" src={item.img} />
-                          <h4>{item.title}</h4>
-                          {isHovering && (
-                            <div className={styles.btnCon}>
-                              <Button onClick={() => this.selectTemplate(item)}>
-                                <span>选用</span>
-                              </Button>
-                              <Button type="danger" onClick={() => this.deleteTemplate(item)}>
-                                <span>删除</span>
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }}
-                  </ReactHoverObserver>
-                </Col>
-              );
-            })}
+            <div className={styles.picBtn}>
+              {(!sorting && (
+                <MyUpload
+                  listType="picture"
+                  fileList={imgList}
+                  showUploadList={false}
+                  onChange={this.handleChangeUpload('img')}
+                >
+                  {imgList.length >= 9 ? null : uploadButton()}
+                </MyUpload>
+              )) || <span />}
+              {(sorting && <Button onClick={this.handleCompleteSort}>完成排序</Button>) || (
+                <Button style={{ marginLeft: 5 }} onClick={this.handleStartSort}>
+                  排序
+                </Button>
+              )}
+            </div>
+
+            {(sorting && (
+              <DndProvider backend={HTML5Backend}>
+                <Example ref={ref => (this.sortable = ref)} data={uploadedImg} />
+              </DndProvider>
+            )) ||
+              uploadedImg.map(item => {
+                return (
+                  <div className={styles.imgListItem} key={item.id}>
+                    <img src={item.url} alt="img" width="50" height="50" />
+                    <span>{item.name}</span>
+                  </div>
+                );
+              })}
+            <div className={styles.locationCon}>
+              所在位置:{' '}
+              <Select
+                showSearch
+                style={{ width: '75%' }}
+                value={addressValue || `${currentAddress.province}${currentAddress.city}`}
+                placeholder="搜索"
+                showArrow={false}
+                filterOption={false}
+                onSearch={this.handleSearchAddress}
+                onChange={this.handleChangeAddress}
+                notFoundContent={null}
+              >
+                {defaultAddressList.map(item => (
+                  <Option key={item.id}>
+                    {item.pname}
+                    {item.cityname}
+                    {item.adname}
+                    {item.address}
+                  </Option>
+                ))}
+              </Select>
+            </div>
           </div>
         </div>
-        <Modal
-          className="previewModal"
-          title="preview"
-          visible={previewModalVisible}
-          onCancel={this.handleHideModal}
-          footer={null}
-        >
-          <div id="preview" />
-        </Modal>
-        <ModalAppSearch ref={ref => (this.searchAppModal = ref)} />
-        <ModalForm
-          wrappedComponentRef={form => (this.modalForm = form)}
-          ref={ref => (this.modalFormWithForm = ref)}
-          formItem={formItem}
-          loading={false}
-          submitAction={this.submitAction}
-          upload={
-            <MyUpload
-              listType="picture-card"
-              fileList={templateImgList}
-              onChange={this.handleChangeUpload('templateImg')}
-            >
-              {templateImgList.length >= 1 ? null : uploadButton('上传封面图')}
-            </MyUpload>
-          }
-        />
       </div>
     );
   }

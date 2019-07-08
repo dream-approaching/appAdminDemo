@@ -1,9 +1,23 @@
 import React, { Fragment } from 'react';
-import { articleType } from '@/constants/constants';
+import { articleType } from '@/config/constants';
 
 // 探索列表
 export default function exploreColumn(editAction) {
   const column = [
+    {
+      title: '操作',
+      dataIndex: 'action2',
+      key: 'action2',
+      render: (value, item) => {
+        return (
+          <Fragment>
+            <a onClick={() => editAction(item)}>
+              <span>编辑</span>
+            </a>
+          </Fragment>
+        );
+      },
+    },
     {
       title: '文章ID',
       dataIndex: 'id',

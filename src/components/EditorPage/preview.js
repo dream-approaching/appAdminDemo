@@ -1,5 +1,5 @@
-export const preview = ({ title, coverImg, lebals, body }) => {
-  console.log('%ccoverImg, lebals:', 'color: #0e93e0;background: #aaefe5;', coverImg, lebals);
+export const preview = ({ title, coverImg, labels, body }) => {
+  console.log('labels:', labels);
   return `
     <!DOCTYPE html>
 <html>
@@ -146,7 +146,9 @@ export const preview = ({ title, coverImg, lebals, body }) => {
     </style>
   </head>
   <body>
+    ${(coverImg && `<img alt="coverImg" src="${coverImg}" />`) || ''}
     <h2>${title}</h2>
+    <div id="labels"></div>
     ${body}
     <script>
       window.onload = () => {
@@ -161,15 +163,17 @@ export const preview = ({ title, coverImg, lebals, body }) => {
           var flexible = lib.flexible || (lib.flexible = {});
   
           var appArr = document.getElementsByClassName('app-block-bar')
-          for (var i = 0, len = appArr.length; i < len; i++) {
+          for (let i = 0, len = appArr.length; i < len; i++) {
             const { name, desc, logo } = appArr[i].dataset;
             appArr[i].innerHTML = '<div class="app-block-left"><div class="app-icon"><img alt="download" src="'+logo+'"></div><div class="app-content"><span class="app-title">'+name+'</span><span class="app-desc">'+desc+'</span></div></div><div class="downloadBtn"><span>下载</span></div>'
           }
-          
-          
-  
-  
-  
+
+          var labelsDom = document.getElementById('labels')
+          for (let i = 0, len = labels.length; i < len; i++) {
+            labelsDom.innerHTML += '<span>#' + item + ' </span>'
+          }
+
+
           if (metaEl) {
             console.warn('将根据已有的meta标签来设置缩放比例');
             var match = metaEl.getAttribute('content').match(/initial\-scale=([\d\.]+)/);

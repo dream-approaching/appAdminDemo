@@ -28,7 +28,7 @@ export default class BarBlockComponent extends React.Component {
             <span className="app-desc">{desc}</span>
           </div>
         </div>
-        <div className="downloadBtn">
+        <div className="downloadBtn" onClick={this.removeBarBlock}>
           <span>下载</span>
         </div>
       </div>

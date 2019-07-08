@@ -16,7 +16,7 @@ export default {
         if (response && response.code === 0) {
           yield put({
             type: 'saveModalAppList',
-            payload: response.data || {},
+            payload: response.data.dataList,
           });
         } else {
           myMessage.warning(response.msg);

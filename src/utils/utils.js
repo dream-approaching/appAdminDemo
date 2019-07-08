@@ -267,3 +267,26 @@ export function debounce2(func, wait = 300, immediate = true) {
 export function mergeProps(stateProps, dispatchProps, ownProps) {
   return Object.assign({}, ownProps, stateProps, dispatchProps);
 }
+
+export function clearRepeatArr(arr, repeatArr) {
+  const setRepeatArr = new Set(repeatArr);
+  return arr.filter(item => !setRepeatArr.has(item));
+}
+
+export function removeArrIndex(arr, index) {
+  const arrBackups = arr;
+  arr = arrBackups.slice(0, index);
+  arr = arr.concat(arrBackups.slice(index + 1));
+  return arr;
+}
+
+export function getParamsString(params) {
+  let paramsString = '';
+  const paramsArr = Object.keys(params);
+  const lastOneIndex = paramsArr.length - 1;
+  paramsArr.map((item, index) => {
+    paramsString += `${item}=${params[item]}${index === lastOneIndex ? '' : '&'}`;
+    return paramsString;
+  });
+  return paramsString;
+}

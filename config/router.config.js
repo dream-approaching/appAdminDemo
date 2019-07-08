@@ -24,12 +24,37 @@ export default [
     Routes: ['src/pages/Authorized'],
     routes: [
       // dashboard
-      { path: '/', redirect: '/iosPlatform/banner', authority: ['admin', 'user'] },
+      { path: '/', redirect: '/dashboard/analysis', authority: ['admin', 'user'] },
+      {
+        path: '/dashboard/analysis',
+        name: '数据统计',
+        icon: 'dashboard',
+        authority: ['admin', 'user'],
+        component: './dashboard/analysis',
+      },
       {
         path: '/explore/explore',
-        name: '探索',
+        name: '文章管理',
+        icon: 'dashboard',
         authority: ['admin', 'user'],
         component: './explore/explore',
+      },
+      {
+        path: '/mall',
+        name: '商城管理',
+        icon: 'dashboard',
+        routes: [
+          {
+            path: '/mall/goods',
+            name: '商品管理',
+            component: './mall/goods',
+          },
+          {
+            path: '/mall/order',
+            name: '订单管理',
+            component: './mall/order',
+          },
+        ],
       },
       // {
       //   path: '/androidPlatform',
